@@ -1,5 +1,2 @@
-./build.sh
-echo "_____________ PROGRAM START ________________"
-echo ""
-.build/main
+./build.sh && echo "_____________ PROGRAM START ________________" && echo "" && .build/main
 

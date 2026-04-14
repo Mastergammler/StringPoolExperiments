@@ -1,23 +1,13 @@
-#include "internal.h"
-#include "types.h"
-
-void pool_init(StringPool* pool, int size)
-{
-    pool->memory = malloc(size);
-    pool->used = 0;
-    pool->max_size = size;
-
-    memset(pool->memory, 0xf8, size);
-}
+#include "../internal.h"
 
 // copy string into own pool
 // -> including null terminator
-str str_alloc(StringPool* pool, const char* cstr)
+str string_alloc(StringPool* pool, const char* cstr)
 {
     int len = strlen(cstr);
+
     // printf("Allocating %p with len %i\n", cstr, len);
     assert(pool->used + len + 1 < pool->max_size);
-
     char* strStart = pool->memory + pool->used;
     pool->used += len + 1;
     memcpy(strStart, cstr, len + 1);
@@ -25,7 +15,8 @@ str str_alloc(StringPool* pool, const char* cstr)
     return (str){.chars = strStart,
                  .len = len,
                  .null_terminated = true,
-                 .is_slice = false};
+                 .is_slice = false,
+                 .is_static = false};
 }
 
 /*
@@ -40,6 +31,11 @@ void* pool_use(StringPool* pool, int size)
     return useStart;
 }
 
+void pool_reset(StringPool* pool)
+{
+    pool->used = 0;
+}
+
 /*
  * Just checks if enough space is in principle available
  */
@@ -51,10 +47,11 @@ void* pool_check_next(StringPool* pool, int maxSize)
     return pool->memory + pool->used;
 }
 
-str from_cstr(const char* cstr)
+str static_str(const char* cstr)
 {
     return (str){.chars = cstr,
                  .len = strlen(cstr),
                  .null_terminated = true,
-                 .is_slice = false};
+                 .is_slice = false,
+                 .is_static = true};
 }

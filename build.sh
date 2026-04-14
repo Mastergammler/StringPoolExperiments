@@ -1,3 +1,2 @@
-tcc src/compile.c -g -o .build/main 
-echo "Main was built!"
+tcc src/compile.c -g -o .build/main -lm && echo "Main was built!"
 

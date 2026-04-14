@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "../internal.h"
 
 int clamp_min(int value, int floorInc)
 {

@@ -1,4 +1,4 @@
-#include "internal.h"
+#include "../internal.h"
 
 str substr(str parent, int from, int toExclusive)
 {
@@ -17,25 +17,24 @@ str substr(str parent, int from, int toExclusive)
                  .len = newLen,
                  .null_terminated =
                      toExclusive == true && parent.null_terminated,
-                 .is_slice = true};
+                 .is_slice = true,
+                 .is_static = parent.is_static};
 }
 
-void append(StringPool* pool, str* src, str extension)
+void string_append(StringPool* pool, str* src, str extension)
 {
-    int newLen = src->len + extension.len;
-    assert(pool->used + newLen + 1 < pool->max_size);
-
-    char* strStart = pool->memory + pool->used;
-    pool->used += newLen + 1;
+    int combinedLen = src->len + extension.len;
+    char* strStart = pool_use(pool, STR_SIZE(combinedLen));
 
     memcpy(strStart, src->chars, src->len);
     memcpy(strStart + src->len, extension.chars, extension.len);
-    strStart[newLen] = 0;
+    strStart[combinedLen] = 0;
 
-    src->len = newLen;
+    src->len = combinedLen;
     src->chars = strStart;
     src->null_terminated = true;
     src->is_slice = false;
+    src->is_static = false;
 
     // TODO:
     //  SLOT MANAGEMENT
