@@ -1,5 +1,6 @@
 #include "string/internal.h"
 #include "string/module.h"
+#include "string/types.h"
 #include "timing/module.h"
 
 #include <stdio.h>
@@ -29,11 +30,9 @@ void test_simple_perf(int iterations)
            printfTime, ownTime);
 }
 
-int main(int argc, char* argv[])
+void test_basic_formatting()
 {
     Timer t = {};
-
-    strings_init(1024 * 1, 256);
 
     timer_start(&t);
     str hello = str_alloc("Hello, world!");
@@ -79,18 +78,29 @@ int main(int argc, char* argv[])
     println(fmt_f(fmtString, 6));
     printf("%.6f ms\n", fmtString);
     println(fmt_str(static_str("Very Short!")));
+}
+
+int main(int argc, char* argv[])
+{
+    Timer t = {};
+    timer_start(&t);
+    strings_init(1024 * 1, 256);
+    float initTime = timer_elapsed_ms(&t);
+    printstr("Buffer Init: % ms", FLOAT(initTime, 3));
+    float formatTime = timer_elapsed_ms(&t);
+    printf("Buffer Init: %.3f ms\n", initTime);
+    float pfFormatTime = timer_elapsed_ms(&t);
+    printstr("Own f-format: % ms\nPrintf f-format: % ms", FLOAT(formatTime, 4),
+             FLOAT(pfFormatTime, 4));
 
     timer_elapsed_ms(&t);
     debug_print_pool(String_Mem.pool, 64);
     debug_print_pool(String_Mem.trans_pool, 64);
-
     float printPoolTime = timer_elapsed_ms(&t);
     float programTime = timer_ms_since_start(&t);
-    println(fmt_f(printPoolTime, 3));
-    println(fmt_f(programTime, 3));
-    printf("%.3f ms\n", programTime);
 
-    // test_simple_perf(1000);
+    printstr("| % ms print pool | % ms program runtime |",
+             FLOAT(printPoolTime, 3), FLOAT(programTime, 3));
 
     return 0;
 }

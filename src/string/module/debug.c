@@ -8,6 +8,7 @@ void debug_print_pool(StringPool pool, int stride)
         unsigned char c = pool.memory[i];
 
         if (c == 0) c = '|';
+        if (c == '\n') c = '\\';
 
         if ((i + 1) % stride == 0)
         {

@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdarg.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,6 +10,12 @@
 
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
+
+#define FLOAT(f, dec)                                                          \
+    &(FloatFormat)                                                             \
+    {                                                                          \
+        FMT_FLOAT, sizeof(FloatFormat), expand_float, f, dec                   \
+    }
 
 int clamp(int value, int min, int max);
 int clamp_max(int value, int ceilingEx);
@@ -22,8 +29,6 @@ void pool_init(StringPool* pool, uint64_t size);
 void pool_reset(StringPool* pool);
 void* pool_check_next(StringPool* pool, int maxSize);
 void* pool_use(StringPool* pool, int size);
-void print_ln(str string, FILE* stream);
-void print_str(const char* cstr, FILE* stream);
 
 str format_binary(StringPool* pool, int num);
 str format_ptr(StringPool* pool, void* ptr);
@@ -32,3 +37,11 @@ str format_int(StringPool* pool, int num);
 str format_pad_left(StringPool* pool, str original, char c, int n);
 str format_float(StringPool* pool, float f, int decimals);
 str format_str(StringPool* pool, str string);
+str format_expand(str formatter, ...);
+str expand_float(FmtHeader* header);
+str format_cstr(const char* formatter, ...);
+
+void print_ln(str string, FILE* stream, va_list args);
+void print_str(const char* cstr, FILE* stream, va_list args);
+
+str format_valist(str formatter, va_list args);

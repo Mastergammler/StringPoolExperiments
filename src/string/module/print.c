@@ -18,8 +18,9 @@ void print(str string)
 
 // STFO: needs explicit fflush(stdout) ?
 // - handle fully buffered / piped mode
-void print_ln(str string, FILE* stream)
+void print_ln(str tmpl, FILE* stream, va_list args)
 {
+    str string = format_valist(tmpl, args);
     if (string.len == 0)
     {
         fputs("<empty>\n", stream);
@@ -31,9 +32,9 @@ void print_ln(str string, FILE* stream)
     }
 }
 
-void print_str(const char* cstr, FILE* stream)
+void print_str(const char* cstr, FILE* stream, va_list args)
 {
-    print_ln(static_str(cstr), stream);
+    print_ln(static_str(cstr), stream, args);
 }
 
 // STFO: add null terminators?

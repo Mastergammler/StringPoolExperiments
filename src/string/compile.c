@@ -1,5 +1,6 @@
 #include "module/alloc.c"
 #include "module/debug.c"
+#include "module/format.c"
 #include "module/init.c"
 #include "module/modify.c"
 #include "module/print.c"

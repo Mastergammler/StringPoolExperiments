@@ -34,7 +34,39 @@ typedef struct
 typedef struct
 {
     StringPool pool;
+    StringPool print_pool;
     StringPool trans_pool;
 } StringMemory;
+
+typedef struct FmtHeader FmtHeader;
+typedef str (*Formatter)(FmtHeader*);
+
+// STFO: this wouldn't allow me to create custom formatters
+// that i can just put into the function ...
+// -> unless i put in a function pointer to the expander function?
+struct FmtHeader
+{
+    Formatter function;
+};
+
+typedef struct
+{
+    FmtHeader header;
+    float value;
+    int decimals;
+} FloatFormat;
+
+typedef struct
+{
+    FmtHeader header;
+    int value;
+
+} IntFormat;
+
+typedef struct
+{
+    FmtHeader header;
+    str value;
+} StrFormat;
 
 #endif

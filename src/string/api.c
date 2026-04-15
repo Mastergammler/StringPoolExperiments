@@ -1,13 +1,17 @@
 #include "internal.h"
 
-inline void println(str string)
+inline void println(str string, ...)
 {
-    print_ln(string, stdout);
+    va_list args;
+    va_start(args, string);
+    print_ln(string, stdout, args);
 }
 
-inline void printstr(const char* cstr)
+inline void printstr(const char* cstr, ...)
 {
-    print_str(cstr, stdout);
+    va_list args;
+    va_start(args, cstr);
+    print_str(cstr, stdout, args);
 }
 
 inline str str_alloc(const char* cstr)
