@@ -26,27 +26,31 @@ typedef struct
 typedef struct
 {
     char* memory;
-    uint64_t max_size;
-    uint64_t used;
+    uint64_t capacity;
+    /*
+     * cursor = used size for non ring buffer
+     */
+    uint64_t cursor_idx;
+    bool ring_buffer;
 
 } StringPool;
 
 typedef struct
 {
-    StringPool pool;
-    StringPool print_pool;
-    StringPool trans_pool;
+    StringPool persistent;
+    StringPool print_buffer;
+    StringPool transient;
 } StringMemory;
 
 typedef struct FmtHeader FmtHeader;
-typedef str (*Formatter)(FmtHeader*);
+typedef str (*Formatter)(StringPool* pool, FmtHeader*);
 
 // STFO: this wouldn't allow me to create custom formatters
 // that i can just put into the function ...
 // -> unless i put in a function pointer to the expander function?
 struct FmtHeader
 {
-    Formatter function;
+    Formatter fmt_fn;
 };
 
 typedef struct
@@ -60,6 +64,7 @@ typedef struct
 {
     FmtHeader header;
     int value;
+    bool binary;
 
 } IntFormat;
 
@@ -68,5 +73,12 @@ typedef struct
     FmtHeader header;
     str value;
 } StrFormat;
+
+typedef struct
+{
+    FmtHeader* header;
+    int placholder_idx;
+    str expanded;
+} FmtArg;
 
 #endif

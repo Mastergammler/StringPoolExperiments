@@ -4,7 +4,8 @@
 
 extern StringMemory String_Mem;
 
-void strings_init(uint64_t poolSize, uint64_t bufferSize);
+void strings_init(uint64_t poolSize, uint64_t printBuffer,
+                  uint64_t expandBufferSize);
 
 void println(str string, ...);
 void printstr(const char* cstr, ...);

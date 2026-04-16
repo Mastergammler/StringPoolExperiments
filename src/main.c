@@ -58,7 +58,7 @@ void test_basic_formatting()
     println(fmt_bin(0b11001));
     println(printBin2);
     println(fmt_bin(-12));
-    println(fmt_ptr(&String_Mem.pool));
+    println(fmt_ptr(&String_Mem.persistent));
     println(fmt_b(12));
     println(fmt_b(false));
     println(fmt_i(12));
@@ -84,7 +84,7 @@ int main(int argc, char* argv[])
 {
     Timer t = {};
     timer_start(&t);
-    strings_init(1024 * 1, 256);
+    strings_init(1024 * 1, 256, 256);
     float initTime = timer_elapsed_ms(&t);
     printstr("Buffer Init: % ms", FLOAT(initTime, 3));
     float formatTime = timer_elapsed_ms(&t);
@@ -94,8 +94,32 @@ int main(int argc, char* argv[])
              FLOAT(pfFormatTime, 4));
 
     timer_elapsed_ms(&t);
-    debug_print_pool(String_Mem.pool, 64);
-    debug_print_pool(String_Mem.trans_pool, 64);
+    str tmpl = str_alloc("This is a static string template. % time we already "
+                         "used it. \nObj: %");
+
+    int iterations = 20;
+    for (int i = 0; i < iterations; i++)
+    {
+        println(tmpl, INT(i), STR_OBJ(tmpl));
+    }
+    str formatted = format_tmpl(tmpl, INT(iterations),
+                                STR_OBJ(static_str("Something new")));
+    float aFewFormats = timer_elapsed_ms(&t);
+    printstr("21 Formats: %", FLOAT(aFewFormats, 3));
+
+    str a = static_str("'First One'");
+    str b = str_alloc("'Second One'");
+    printstr("%-%", STR(a), STR(b));
+    printstr("-%-%", STR(a), STR(b));
+    printstr("-%-%- %:%", STR(a), STR(b), INT(0b1101101), INT_BIN(0b1101101));
+    float threeFormats = timer_elapsed_ms(&t);
+    printstr("| % ms : % formats | % ms other formats", FLOAT(aFewFormats, 3),
+             INT(iterations), FLOAT(threeFormats, 3));
+
+    timer_elapsed_ms(&t);
+    debug_print_pool(String_Mem.persistent, 64);
+    debug_print_pool(String_Mem.print_buffer, 64);
+    debug_print_pool(String_Mem.transient, 64);
     float printPoolTime = timer_elapsed_ms(&t);
     float programTime = timer_ms_since_start(&t);
 

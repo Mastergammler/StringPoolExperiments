@@ -2,13 +2,22 @@
 
 void debug_print_pool(StringPool pool, int stride)
 {
-    printf("-------------------------------------------\n");
-    for (int i = 0; i < pool.max_size; i++)
+    if (pool.ring_buffer)
+    {
+        printf(">>--------------------------------------->>\n");
+    }
+    else
+    {
+        printf("-------------------------------------------\n");
+    }
+
+    for (int i = 0; i < pool.capacity; i++)
     {
         unsigned char c = pool.memory[i];
 
         if (c == 0) c = '|';
         if (c == '\n') c = '\\';
+        if (c == SENTINEL) c = '`';
 
         if ((i + 1) % stride == 0)
         {
@@ -20,5 +29,13 @@ void debug_print_pool(StringPool pool, int stride)
             printf("%c", c);
         }
     }
-    printf("-------------------------------------------\n");
+
+    if (pool.ring_buffer)
+    {
+        printf(">>--------------------------------------->>\n");
+    }
+    else
+    {
+        printf("-------------------------------------------\n");
+    }
 }

@@ -20,7 +20,12 @@ void print(str string)
 // - handle fully buffered / piped mode
 void print_ln(str tmpl, FILE* stream, va_list args)
 {
-    str string = format_valist(tmpl, args);
+    // writing into the print buffer, which will be reused
+    // on 'overflow' it will just overwrite previous strings
+    // For async handling, the buffer needs to be large enough,
+    // that new strings don't override previous ones and lead to garbage
+    // print output
+    str string = format_valist(&String_Mem.print_buffer, tmpl, args);
     if (string.len == 0)
     {
         fputs("<empty>\n", stream);
@@ -37,9 +42,6 @@ void print_str(const char* cstr, FILE* stream, va_list args)
     print_ln(static_str(cstr), stream, args);
 }
 
-// STFO: add null terminators?
-//  -> or is this redundant?
-//  => Because it supposed to happend in the expand buffer?
 str format_ptr(StringPool* pool, void* ptr)
 {
     // 2 hex values for each byte
@@ -230,15 +232,15 @@ str format_float(StringPool* pool, float f, int decimals)
     // this is the reason for an expander pool
     // -> Because like this i would just pollute the actual string pool
     int high = f;
-    str num = format_int(&String_Mem.trans_pool, high);
+    str num = format_int(&String_Mem.transient, high);
     int decimalNum = (f - high) * pow(10, decimals);
-    str lo = format_int(&String_Mem.trans_pool, decimalNum);
+    str lo = format_int(&String_Mem.transient, decimalNum);
 
     // TODO: needs to be variable
     //  -> per decimal point etc
     str format[FMT_F_SIZE] = {
         num, static_str("."),
-        format_pad_left(&String_Mem.trans_pool, lo, '0', decimals)};
+        format_pad_left(&String_Mem.transient, lo, '0', decimals)};
 
     int totalLen = 1;
     for (int i = 0; i < FMT_F_SIZE; i++)
@@ -257,7 +259,6 @@ str format_float(StringPool* pool, float f, int decimals)
     *curC = 0;
 
     char* actualStr = pool_use(pool, totalLen);
-    pool_reset(&String_Mem.trans_pool);
 
     return (str){
         .chars = actualStr, .len = totalLen - 1, .null_terminated = true};
@@ -269,7 +270,7 @@ str format_float(StringPool* pool, float f, int decimals)
 str format_str(StringPool* pool, str string)
 {
     // doing it the bad way first
-    str ptr = format_ptr(&String_Mem.trans_pool, (void*)string.chars);
+    str ptr = format_ptr(&String_Mem.transient, (void*)string.chars);
     str dataPreview = string;
     str previewDots = {0};
     if (string.len > STR_PREVIEW_LEN)
@@ -278,10 +279,10 @@ str format_str(StringPool* pool, str string)
         previewDots = static_str("...");
     }
 
-    str len = format_int(&String_Mem.trans_pool, string.len);
-    str nullT = format_bool(&String_Mem.trans_pool, string.null_terminated);
-    str isSlice = format_bool(&String_Mem.trans_pool, string.is_slice);
-    str isStatic = format_bool(&String_Mem.trans_pool, string.is_static);
+    str len = format_int(&String_Mem.transient, string.len);
+    str nullT = format_bool(&String_Mem.transient, string.null_terminated);
+    str isSlice = format_bool(&String_Mem.transient, string.is_slice);
+    str isStatic = format_bool(&String_Mem.transient, string.is_static);
 
     // TODO: this sucks, this is way to hard to define
     //  -> we need some good way to expand this right into the final buffer i
@@ -325,7 +326,6 @@ str format_str(StringPool* pool, str string)
     *curC = 0;
 
     char* actualStr = pool_use(pool, totalLen);
-    pool_reset(&String_Mem.trans_pool);
 
     return (str){
         .chars = actualStr, .len = totalLen - 1, .null_terminated = true};

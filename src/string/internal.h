@@ -1,3 +1,6 @@
+#ifndef STRING_INTERNAL
+#define STRING_INTERNAL
+
 #include "module.h"
 
 #include <assert.h>
@@ -10,12 +13,41 @@
 
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
+#define FMT_ARG_BUF_MAX 16
 
 #define FLOAT(f, dec)                                                          \
     &(FloatFormat)                                                             \
     {                                                                          \
-        FMT_FLOAT, sizeof(FloatFormat), expand_float, f, dec                   \
+        expand_float, f, dec                                                   \
     }
+
+#define INT(val)                                                               \
+    &(IntFormat)                                                               \
+    {                                                                          \
+        expand_int, val, false                                                 \
+    }
+#define INT_BIN(val)                                                           \
+    &(IntFormat)                                                               \
+    {                                                                          \
+        expand_int, val, true                                                  \
+    }
+
+#define STR_OBJ(val)                                                           \
+    &(StrFormat)                                                               \
+    {                                                                          \
+        expand_str, val                                                        \
+    }
+
+#define STR(val)                                                               \
+    &(StrFormat)                                                               \
+    {                                                                          \
+        use_str, val                                                           \
+    }
+
+static const char FMT_PH = '%';
+static const int PLACEHOLDER_LEN = 1;
+
+static FmtArg FmtArgBuffer[FMT_ARG_BUF_MAX];
 
 int clamp(int value, int min, int max);
 int clamp_max(int value, int ceilingEx);
@@ -38,10 +70,16 @@ str format_pad_left(StringPool* pool, str original, char c, int n);
 str format_float(StringPool* pool, float f, int decimals);
 str format_str(StringPool* pool, str string);
 str format_expand(str formatter, ...);
-str expand_float(FmtHeader* header);
 str format_cstr(const char* formatter, ...);
 
 void print_ln(str string, FILE* stream, va_list args);
 void print_str(const char* cstr, FILE* stream, va_list args);
 
-str format_valist(str formatter, va_list args);
+str format_valist(StringPool* pool, str formatter, va_list args);
+
+str expand_int(StringPool* pool, FmtHeader* header);
+str expand_float(StringPool* pool, FmtHeader* header);
+str expand_str(StringPool* pool, FmtHeader* header);
+str use_str(StringPool* pool, FmtHeader* header);
+
+#endif
