@@ -71,6 +71,18 @@ typedef struct
 typedef struct
 {
     FmtHeader header;
+    void* value;
+} PtrFormat;
+
+typedef struct
+{
+    FmtHeader header;
+    bool value;
+} BoolFormat;
+
+typedef struct
+{
+    FmtHeader header;
     str value;
 } StrFormat;
 

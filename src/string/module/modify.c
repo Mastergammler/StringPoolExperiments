@@ -41,3 +41,24 @@ void string_append(StringPool* pool, str* src, str extension)
     //  mark first one as empty slot
     //  add print slot to debug print
 }
+
+str string_repeat(StringPool* pool, str src, int num)
+{
+    int len = src.len * num;
+    if (len <= 0) return (str){0};
+
+    char* mem = pool_use(pool, STR_SIZE(len));
+    char* writePos = mem;
+
+    for (int i = 0; i < num; i++)
+    {
+        for (int c = 0; c < src.len; c++)
+        {
+            *writePos++ = src.chars[c];
+        }
+    }
+
+    *writePos = 0;
+
+    return (str){mem, len, true};
+}

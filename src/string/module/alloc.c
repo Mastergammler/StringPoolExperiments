@@ -55,7 +55,7 @@ void* pool_check_next(StringPool* pool, int maxSize)
     return pool->memory + pool->cursor_idx;
 }
 
-str static_str(const char* cstr)
+str staticstr(const char* cstr)
 {
     return (str){.chars = cstr,
                  .len = strlen(cstr),

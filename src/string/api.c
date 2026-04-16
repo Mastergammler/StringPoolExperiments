@@ -1,25 +1,25 @@
 #include "internal.h"
 
-inline void println(str string, ...)
+inline void printstr(str string, ...)
 {
     va_list args;
     va_start(args, string);
     print_ln(string, stdout, args);
 }
 
-inline void printstr(const char* cstr, ...)
+inline void print(const char* cstr, ...)
 {
     va_list args;
     va_start(args, cstr);
     print_str(cstr, stdout, args);
 }
 
-inline str str_alloc(const char* cstr)
+inline str allocstr(const char* cstr)
 {
     return string_alloc(&String_Mem.persistent, cstr);
 }
 
-inline void str_append(str* src, str extension)
+inline void appendstr(str* src, str extension)
 {
     string_append(&String_Mem.persistent, src, extension);
 }

@@ -21,6 +21,13 @@ str expand_int(StringPool* pool, FmtHeader* header)
     }
 }
 
+str expand_bool(StringPool* pool, FmtHeader* header)
+{
+    BoolFormat* format = (BoolFormat*)header;
+
+    return format_bool(pool, format->value);
+}
+
 str expand_str(StringPool* pool, FmtHeader* header)
 {
     StrFormat* format = (StrFormat*)header;
@@ -33,12 +40,19 @@ str use_str(StringPool* pool, FmtHeader* header)
     return format->value;
 }
 
+str expand_ptr(StringPool* pool, FmtHeader* header)
+{
+    PtrFormat* format = (PtrFormat*)header;
+    return format_ptr(pool, format->value);
+}
+
 /*
  * NOTE: Not thread safe, becaues of the use of FmtArgBuffer
  * -> This buffer can only be used by one thread at a time
  * => There is no mechanism to manage access of multiple threads!
  */
-inline str format_valist(StringPool* pool, str formatter, va_list args)
+inline str format_valist(StringPool* pool, str formatter, va_list args,
+                         bool keepTransients)
 {
     int stringLen = formatter.len;
     int argCount = 0;
@@ -85,25 +99,41 @@ inline str format_valist(StringPool* pool, str formatter, va_list args)
 
     *writePos = 0;
 
-    pool_reset(&String_Mem.transient);
+    // NOTE: sometimes we need to keep the transient buffer
+    // because the call is a SUB formatting of another string
+    // so we can't clear it yet, else strings get overwritten
+    if (!keepTransients)
+    {
+        pool_reset(&String_Mem.transient);
+    }
     va_end(args);
 
     return (str){stringStart, stringLen, true};
 }
 
+/*
+ * For internal use, might need to keep the transient buffer
+ */
+str format_pool(StringPool* pool, bool keepBuffer, const char* formatter, ...)
+{
+    va_list args;
+    va_start(args, formatter);
+    return format_valist(pool, staticstr(formatter), args, keepBuffer);
+}
+
+// for external use -> clears transient buffer
 str format(const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(&String_Mem.persistent, static_str(formatter), args);
+    return format_valist(&String_Mem.persistent, staticstr(formatter), args,
+                         false);
 }
 
-// use header type -> declare size
-// -> Then read args by size
-// => Just read bytes after the first passed argument
-str format_tmpl(str formatter, ...)
+// for external use -> clears transient buffer
+str formatstr(str formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(&String_Mem.persistent, formatter, args);
+    return format_valist(&String_Mem.persistent, formatter, args, false);
 }

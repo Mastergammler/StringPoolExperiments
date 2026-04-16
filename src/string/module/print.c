@@ -1,4 +1,5 @@
 #include "../internal.h"
+#include "../macros.h"
 
 static const char TRUE_STR[] = "true";
 static const char FALSE_STR[] = "false";
@@ -11,11 +12,6 @@ static const char HEX_DIGITS[] = "0123456789abcdef";
 #define FMT_F_SIZE 3
 #define STR_PREVIEW_LEN 13
 
-void print(str string)
-{
-    printf("%.*s", string.len, string.chars);
-}
-
 // STFO: needs explicit fflush(stdout) ?
 // - handle fully buffered / piped mode
 void print_ln(str tmpl, FILE* stream, va_list args)
@@ -25,7 +21,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     // For async handling, the buffer needs to be large enough,
     // that new strings don't override previous ones and lead to garbage
     // print output
-    str string = format_valist(&String_Mem.print_buffer, tmpl, args);
+    str string = format_valist(&String_Mem.print_buffer, tmpl, args, false);
     if (string.len == 0)
     {
         fputs("<empty>\n", stream);
@@ -39,7 +35,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
 
 void print_str(const char* cstr, FILE* stream, va_list args)
 {
-    print_ln(static_str(cstr), stream, args);
+    print_ln(staticstr(cstr), stream, args);
 }
 
 str format_ptr(StringPool* pool, void* ptr)
@@ -94,11 +90,11 @@ str format_bool(StringPool* pool, bool boolean)
     pool_check_next(pool, maxSize);
     if (boolean)
     {
-        return string_alloc(pool, TRUE_STR);
+        return staticstr(TRUE_STR);
     }
     else
     {
-        return string_alloc(pool, FALSE_STR);
+        return staticstr(FALSE_STR);
     }
 }
 
@@ -232,101 +228,46 @@ str format_float(StringPool* pool, float f, int decimals)
     // this is the reason for an expander pool
     // -> Because like this i would just pollute the actual string pool
     int high = f;
-    str num = format_int(&String_Mem.transient, high);
     int decimalNum = (f - high) * pow(10, decimals);
-    str lo = format_int(&String_Mem.transient, decimalNum);
 
-    // TODO: needs to be variable
-    //  -> per decimal point etc
-    str format[FMT_F_SIZE] = {
-        num, static_str("."),
-        format_pad_left(&String_Mem.transient, lo, '0', decimals)};
-
-    int totalLen = 1;
-    for (int i = 0; i < FMT_F_SIZE; i++)
+    int decimalPlacesUsed = decimals;
+    for (int i = decimals - 2; i >= 0; i--)
     {
-        totalLen += format[i].len;
+        int placesMin = pow(10, i);
+        if (decimalNum >= placesMin)
+        {
+            decimalPlacesUsed = (i + 1);
+        }
     }
 
-    char* curC = pool_check_next(pool, totalLen);
+    int padding =
+        decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
 
-    for (int i = 0; i < FMT_F_SIZE; i++)
-    {
-        str cur = format[i];
-        memcpy(curC, cur.chars, cur.len);
-        curC += cur.len;
-    }
-    *curC = 0;
+    // str padStr = string_repeat(&String_Mem.transient, staticstr("0"),
+    // padding);
+    str padStr = staticstr("00000");
+    printf("PAD: %i.%s%i\n", high, padStr.chars, decimalNum);
 
-    char* actualStr = pool_use(pool, totalLen);
-
-    return (str){
-        .chars = actualStr, .len = totalLen - 1, .null_terminated = true};
+    return format_pool(pool, true, "%.%%", INT(high), STR(padStr),
+                       INT(decimalNum));
 }
 
 /*
- * testing a custom formatter
+ * Example for a custom formatter
  */
 str format_str(StringPool* pool, str string)
 {
-    // doing it the bad way first
-    str ptr = format_ptr(&String_Mem.transient, (void*)string.chars);
     str dataPreview = string;
     str previewDots = {0};
     if (string.len > STR_PREVIEW_LEN)
     {
         dataPreview.len = STR_PREVIEW_LEN;
-        previewDots = static_str("...");
+        previewDots = staticstr("...");
     }
 
-    str len = format_int(&String_Mem.transient, string.len);
-    str nullT = format_bool(&String_Mem.transient, string.null_terminated);
-    str isSlice = format_bool(&String_Mem.transient, string.is_slice);
-    str isStatic = format_bool(&String_Mem.transient, string.is_static);
-
-    // TODO: this sucks, this is way to hard to define
-    //  -> we need some good way to expand this right into the final buffer i
-    //  think
-    //  => But then i don't quite know the end size is the problem ...
-    //  => Well, i mean i could know the max size again ...
-
-    str format[FMT_STR_SIZE] = {static_str("str{ "),
-                                ptr,
-                                static_str(": '"),
-                                dataPreview,
-                                previewDots,
-                                static_str("', len: "),
-                                len,
-                                static_str(", "),
-                                nullT,
-                                static_str(", "),
-                                isSlice,
-                                static_str(", "),
-                                isStatic,
-                                static_str(" }")};
-
-    int totalLen = 1;
-    for (int i = 0; i < FMT_STR_SIZE; i++)
-    {
-        totalLen += format[i].len;
-    }
-
-    // We certainly want to add formating here, else it doesn't make much sense
-    // -> but it would make sense to expand in place also?
-    // => Becaues else we copy data twice ...
-
-    char* curC = pool_check_next(pool, totalLen);
-
-    for (int i = 0; i < FMT_STR_SIZE; i++)
-    {
-        str cur = format[i];
-        memcpy(curC, cur.chars, cur.len);
-        curC += cur.len;
-    }
-    *curC = 0;
-
-    char* actualStr = pool_use(pool, totalLen);
-
-    return (str){
-        .chars = actualStr, .len = totalLen - 1, .null_terminated = true};
+    return format_pool(pool, true, "str{ %: '%', len: %%, %, %, % }",
+                       PTR((void*)string.chars), STR(dataPreview),
+                       STR(previewDots), INT(string.len),
+                       BOOL(string.null_terminated), BOOL(string.is_slice),
+                       BOOL(string.is_static));
 }
