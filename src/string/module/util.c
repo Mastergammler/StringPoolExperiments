@@ -14,6 +14,7 @@ int get_and_reserve_arg_buf()
     // no buffer available, running out of buffer space
     // -> to many recursive usages
     assert(false);
+    return -1;
 }
 
 void release_arg_buf(int index)

@@ -67,7 +67,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
             FmtHeader* h = va_arg(args, FmtHeader*);
             buffer[argCount].header = h;
             buffer[argCount].placholder_idx = i;
-            buffer[argCount].expanded = h->fmt_fn(&String_Mem.transient, h);
+            buffer[argCount].expanded = h->fmt_fn(&StrMemory.transient, h);
             stringLen += buffer[argCount].expanded.len - PLACEHOLDER_LEN;
             argCount++;
         }
@@ -105,7 +105,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
     // so we can't clear it yet, else strings get overwritten
     if (!opt.keep_transients)
     {
-        pool_reset(&String_Mem.transient);
+        pool_reset(&StrMemory.transient);
     }
     va_end(args);
 
@@ -122,23 +122,23 @@ str format_pool(StorageOptions opt, const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(opt, staticstr(formatter), args);
+    return format_valist(opt, str_static(formatter), args);
 }
 
 // for external use -> clears transient buffer
-str format(const char* formatter, ...)
+str str_formatc(const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StorageOptions opt = {&String_Mem.persistent};
-    return format_valist(opt, staticstr(formatter), args);
+    StorageOptions opt = {&StrMemory.persistent};
+    return format_valist(opt, str_static(formatter), args);
 }
 
 // for external use -> clears transient buffer
-str formatstr(str formatter, ...)
+str str_format(str formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StorageOptions opt = {&String_Mem.persistent};
+    StorageOptions opt = {&StrMemory.persistent};
     return format_valist(opt, formatter, args);
 }

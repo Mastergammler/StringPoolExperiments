@@ -1,6 +1,6 @@
 #include "../internal.h"
 
-str substr(str parent, int from, int toExclusive)
+str str_sub(str parent, int from, int toExclusive)
 {
     if (from > toExclusive)
     {

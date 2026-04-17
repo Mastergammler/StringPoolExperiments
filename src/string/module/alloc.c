@@ -6,11 +6,8 @@ str string_alloc(StringPool* pool, const char* cstr)
 {
     int len = strlen(cstr);
 
-    // printf("Allocating %p with len %i\n", cstr, len);
-    assert(pool->cursor_idx + len + 1 < pool->capacity);
-    char* strStart = pool->memory + pool->cursor_idx;
-    pool->cursor_idx += len + 1;
-    memcpy(strStart, cstr, len + 1);
+    char* strStart = pool_use(pool, STR_SIZE(len));
+    memcpy(strStart, cstr, STR_SIZE(len));
 
     return (str){.chars = strStart,
                  .len = len,
@@ -49,17 +46,6 @@ void pool_reset(StringPool* pool)
  */
 void* pool_check_next(StringPool* pool, int maxSize)
 {
-    // printf("Checking pool for %i available bytes. %i/%i used\n", maxSize,
-    // pool->cursor_idx, pool->capacity);
     assert(pool->cursor_idx + maxSize < pool->capacity);
     return pool->memory + pool->cursor_idx;
-}
-
-str staticstr(const char* cstr)
-{
-    return (str){.chars = cstr,
-                 .len = strlen(cstr),
-                 .null_terminated = true,
-                 .is_slice = false,
-                 .is_static = true};
 }

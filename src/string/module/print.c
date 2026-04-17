@@ -21,7 +21,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     // For async handling, the buffer needs to be large enough,
     // that new strings don't override previous ones and lead to garbage
     // print output
-    StorageOptions opt = {&String_Mem.print_buffer};
+    StorageOptions opt = {&StrMemory.print_buffer};
     str string = format_valist(opt, tmpl, args);
     if (string.len == 0)
     {
@@ -36,7 +36,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
 
 void print_str(const char* cstr, FILE* stream, va_list args)
 {
-    print_ln(staticstr(cstr), stream, args);
+    print_ln(str_static(cstr), stream, args);
 }
 
 str format_ptr(StringPool* pool, void* ptr)
@@ -89,11 +89,11 @@ str format_bool(StringPool* pool, bool boolean)
     pool_check_next(pool, maxSize);
     if (boolean)
     {
-        return staticstr(TRUE_STR);
+        return str_static(TRUE_STR);
     }
     else
     {
-        return staticstr(FALSE_STR);
+        return str_static(FALSE_STR);
     }
 }
 
@@ -244,7 +244,7 @@ str format_float(StringPool* pool, float f, int decimals)
     int padding =
         decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
 
-    str padStr = string_repeat(&String_Mem.transient, staticstr("0"), padding);
+    str padStr = string_repeat(&StrMemory.transient, str_static("0"), padding);
     StorageOptions opt = {pool, true};
     return format_pool(opt, "%.%%", INT(high), STR(padStr), INT(roundedNum));
 }
@@ -254,11 +254,11 @@ str format_float(StringPool* pool, float f, int decimals)
  */
 str format_str(StringPool* pool, str string)
 {
-    str dataPreview = substr(string, 0, STR_PREVIEW_LEN);
+    str dataPreview = str_sub(string, 0, STR_PREVIEW_LEN);
     str previewDots = {0};
     if (string.len > STR_PREVIEW_LEN)
     {
-        previewDots = staticstr("...");
+        previewDots = str_static("...");
     }
 
     StorageOptions opt = {pool, true};
