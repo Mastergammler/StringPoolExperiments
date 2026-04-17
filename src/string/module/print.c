@@ -21,7 +21,8 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     // For async handling, the buffer needs to be large enough,
     // that new strings don't override previous ones and lead to garbage
     // print output
-    str string = format_valist(&String_Mem.print_buffer, tmpl, args, false);
+    StorageOptions opt = {&String_Mem.print_buffer};
+    str string = format_valist(opt, tmpl, args);
     if (string.len == 0)
     {
         fputs("<empty>\n", stream);
@@ -46,8 +47,6 @@ str format_ptr(StringPool* pool, void* ptr)
     // '0x' prefix + null-term
     int size = printLen + 3;
 
-    // printf("Pointer %p: %i bytes, len: %i, total: %i\n", ptr, bytes,
-    // printLen, size);
     char* curC = pool_check_next(pool, size);
 
     uintptr_t ptrVal = (uintptr_t)ptr;
@@ -228,28 +227,26 @@ str format_float(StringPool* pool, float f, int decimals)
     // this is the reason for an expander pool
     // -> Because like this i would just pollute the actual string pool
     int high = f;
-    int decimalNum = (f - high) * pow(10, decimals);
+    float decShifted = (f - high) * pow(10, decimals);
+    int roundedNum = round(decShifted);
 
     int decimalPlacesUsed = decimals;
-    for (int i = decimals - 2; i >= 0; i--)
+    for (int i = decimals - 1; i >= 0; i--)
     {
         int placesMin = pow(10, i);
-        if (decimalNum >= placesMin)
+        if (roundedNum >= placesMin)
         {
             decimalPlacesUsed = (i + 1);
+            break;
         }
     }
 
     int padding =
         decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
 
-    // str padStr = string_repeat(&String_Mem.transient, staticstr("0"),
-    // padding);
-    str padStr = staticstr("00000");
-    printf("PAD: %i.%s%i\n", high, padStr.chars, decimalNum);
-
-    return format_pool(pool, true, "%.%%", INT(high), STR(padStr),
-                       INT(decimalNum));
+    str padStr = string_repeat(&String_Mem.transient, staticstr("0"), padding);
+    StorageOptions opt = {pool, true};
+    return format_pool(opt, "%.%%", INT(high), STR(padStr), INT(roundedNum));
 }
 
 /*
@@ -257,17 +254,18 @@ str format_float(StringPool* pool, float f, int decimals)
  */
 str format_str(StringPool* pool, str string)
 {
-    str dataPreview = string;
+    str dataPreview = substr(string, 0, STR_PREVIEW_LEN);
     str previewDots = {0};
     if (string.len > STR_PREVIEW_LEN)
     {
-        dataPreview.len = STR_PREVIEW_LEN;
         previewDots = staticstr("...");
     }
 
-    return format_pool(pool, true, "str{ %: '%', len: %%, %, %, % }",
-                       PTR((void*)string.chars), STR(dataPreview),
-                       STR(previewDots), INT(string.len),
-                       BOOL(string.null_terminated), BOOL(string.is_slice),
-                       BOOL(string.is_static));
+    StorageOptions opt = {pool, true};
+    str formatted = format_pool(opt, "str{ %: '%%', len: %, %, %, % }",
+                                PTR((void*)string.chars), STR(dataPreview),
+                                STR(previewDots), INT(string.len),
+                                BOOL(string.null_terminated),
+                                BOOL(string.is_slice), BOOL(string.is_static));
+    return formatted;
 }

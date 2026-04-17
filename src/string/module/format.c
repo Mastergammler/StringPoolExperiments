@@ -51,8 +51,7 @@ str expand_ptr(StringPool* pool, FmtHeader* header)
  * -> This buffer can only be used by one thread at a time
  * => There is no mechanism to manage access of multiple threads!
  */
-inline str format_valist(StringPool* pool, str formatter, va_list args,
-                         bool keepTransients)
+str format_valist(StorageOptions opt, str formatter, va_list args)
 {
     int stringLen = formatter.len;
     int argCount = 0;
@@ -64,22 +63,23 @@ inline str format_valist(StringPool* pool, str formatter, va_list args,
             assert(argCount < FMT_ARG_BUF_MAX);
 
             FmtHeader* h = va_arg(args, FmtHeader*);
-            FmtArgBuffer[argCount].header = h;
-            FmtArgBuffer[argCount].placholder_idx = i;
-            FmtArgBuffer[argCount].expanded =
+            opt.arg_buffer[argCount].header = h;
+            opt.arg_buffer[argCount].placholder_idx = i;
+            opt.arg_buffer[argCount].expanded =
                 h->fmt_fn(&String_Mem.transient, h);
-            stringLen += FmtArgBuffer[argCount].expanded.len - PLACEHOLDER_LEN;
+            stringLen +=
+                opt.arg_buffer[argCount].expanded.len - PLACEHOLDER_LEN;
             argCount++;
         }
     }
 
-    char* stringStart = pool_use(pool, STR_SIZE(stringLen));
+    char* stringStart = pool_use(opt.pool, STR_SIZE(stringLen));
     char* writePos = stringStart;
     int formatterPos = 0;
     for (int arg = 0; arg < argCount; arg++)
     {
-        int fmtArgPos = FmtArgBuffer[arg].placholder_idx;
-        str expanded = FmtArgBuffer[arg].expanded;
+        int fmtArgPos = opt.arg_buffer[arg].placholder_idx;
+        str expanded = opt.arg_buffer[arg].expanded;
         int fmtSectionLen = fmtArgPos - formatterPos;
         memcpy(writePos, formatter.chars + formatterPos, fmtSectionLen);
         writePos += fmtSectionLen;
@@ -102,7 +102,7 @@ inline str format_valist(StringPool* pool, str formatter, va_list args,
     // NOTE: sometimes we need to keep the transient buffer
     // because the call is a SUB formatting of another string
     // so we can't clear it yet, else strings get overwritten
-    if (!keepTransients)
+    if (!opt.keep_transients)
     {
         pool_reset(&String_Mem.transient);
     }
@@ -113,12 +113,15 @@ inline str format_valist(StringPool* pool, str formatter, va_list args,
 
 /*
  * For internal use, might need to keep the transient buffer
+ *
+ * PERF: is the opt object with it's own static pool too much overhead?
+ * Or is that fine?
  */
-str format_pool(StringPool* pool, bool keepBuffer, const char* formatter, ...)
+str format_pool(StorageOptions opt, const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(pool, staticstr(formatter), args, keepBuffer);
+    return format_valist(opt, staticstr(formatter), args);
 }
 
 // for external use -> clears transient buffer
@@ -126,8 +129,8 @@ str format(const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(&String_Mem.persistent, staticstr(formatter), args,
-                         false);
+    StorageOptions opt = {&String_Mem.persistent};
+    return format_valist(opt, staticstr(formatter), args);
 }
 
 // for external use -> clears transient buffer
@@ -135,5 +138,6 @@ str formatstr(str formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    return format_valist(&String_Mem.persistent, formatter, args, false);
+    StorageOptions opt = {&String_Mem.persistent};
+    return format_valist(opt, formatter, args);
 }

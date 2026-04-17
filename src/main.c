@@ -81,13 +81,11 @@ void test_basic_formatting()
     printstr(fmt_str(staticstr("Very Short!")));
 }
 
-int main(int argc, char* argv[])
+void test2()
 {
-    Timer t = {};
+    Timer t;
     timer_start(&t);
-    strings_init(1024 * 1, 256, 256);
     float initTime = timer_elapsed_ms(&t);
-    print("WTF");
     print("Buffer Init: % ms", FLOAT(initTime, 3));
     float formatTime = timer_elapsed_ms(&t);
     printf("Buffer Init: %.3f ms\n", initTime);
@@ -120,6 +118,23 @@ int main(int argc, char* argv[])
 
     print("% % % % %", FLOAT(aFewFormats, 0), FLOAT(aFewFormats, 1),
           FLOAT(aFewFormats, 2), FLOAT(aFewFormats, 3), FLOAT(aFewFormats, 4));
+
+    print("> ipos % - ineg % - ibin %", INT(5), INT(-7), INT_BIN(19));
+
+    print("'%' - %", STR(a), STR_OBJ(a));
+}
+
+int main(int argc, char* argv[])
+{
+    Timer t = {};
+    timer_start(&t);
+    strings_init(1024 * 1, 256, 256);
+
+    test2();
+
+    str formatted =
+        format("% - % - % - % - %", FLOAT(1.005, 5), FLOAT(1.005, 4),
+               FLOAT(1.005, 3), FLOAT(0.07, 2), FLOAT(0.07, 1));
 
     timer_elapsed_ms(&t);
     debug_print_pool(String_Mem.persistent, 64);

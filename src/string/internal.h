@@ -13,12 +13,9 @@
 
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
-#define FMT_ARG_BUF_MAX 16
 
 static const char FMT_PH = '%';
 static const int PLACEHOLDER_LEN = 1;
-
-static FmtArg FmtArgBuffer[FMT_ARG_BUF_MAX];
 
 int clamp(int value, int min, int max);
 int clamp_max(int value, int ceilingEx);
@@ -46,9 +43,6 @@ str format_cstr(const char* formatter, ...);
 void print_ln(str string, FILE* stream, va_list args);
 void print_str(const char* cstr, FILE* stream, va_list args);
 
-str format_valist(StringPool* pool, str formatter, va_list args,
-                  bool keepTransients);
-
 str expand_int(StringPool* pool, FmtHeader* header);
 str expand_float(StringPool* pool, FmtHeader* header);
 str expand_str(StringPool* pool, FmtHeader* header);
@@ -57,6 +51,7 @@ str use_str(StringPool* pool, FmtHeader* header);
 str expand_ptr(StringPool* pool, FmtHeader* header);
 str expand_bool(StringPool* pool, FmtHeader* header);
 str string_repeat(StringPool* pool, str src, int num);
-str format_pool(StringPool* pool, bool keepBuffer, const char* formatter, ...);
+str format_pool(StorageOptions opt, const char* formatter, ...);
+str format_valist(StorageOptions opt, str formatter, va_list args);
 
 #endif

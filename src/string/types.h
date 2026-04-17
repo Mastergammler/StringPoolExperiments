@@ -1,6 +1,8 @@
 #ifndef STRING_TYPES
 #define STRING_TYPES
 
+#define FMT_ARG_BUF_MAX 16
+
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -92,5 +94,12 @@ typedef struct
     int placholder_idx;
     str expanded;
 } FmtArg;
+
+typedef struct
+{
+    StringPool* pool;
+    bool keep_transients;
+    FmtArg arg_buffer[FMT_ARG_BUF_MAX];
+} StorageOptions;
 
 #endif
