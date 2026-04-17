@@ -2,6 +2,7 @@
 #define STRING_TYPES
 
 #define FMT_ARG_BUF_MAX 16
+#define FMT_ARG_BUF_COUNT 4
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -97,9 +98,15 @@ typedef struct
 
 typedef struct
 {
+    FmtArg buf[FMT_ARG_BUF_COUNT][FMT_ARG_BUF_MAX];
+    bool in_use[FMT_ARG_BUF_COUNT];
+
+} FmtArgBufferStore;
+
+typedef struct
+{
     StringPool* pool;
     bool keep_transients;
-    FmtArg arg_buffer[FMT_ARG_BUF_MAX];
 } StorageOptions;
 
 #endif

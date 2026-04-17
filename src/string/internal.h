@@ -2,6 +2,7 @@
 #define STRING_INTERNAL
 
 #include "module.h"
+#include "types.h"
 
 #include <assert.h>
 #include <math.h>
@@ -13,6 +14,8 @@
 
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
+
+static FmtArgBufferStore FmtArgBuffers;
 
 static const char FMT_PH = '%';
 static const int PLACEHOLDER_LEN = 1;
@@ -55,3 +58,5 @@ str format_pool(StorageOptions opt, const char* formatter, ...);
 str format_valist(StorageOptions opt, str formatter, va_list args);
 
 #endif
+int get_and_reserve_arg_buf();
+void release_arg_buf(int index);

@@ -55,6 +55,8 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
 {
     int stringLen = formatter.len;
     int argCount = 0;
+    int bufferIdx = get_and_reserve_arg_buf();
+    FmtArg* buffer = FmtArgBuffers.buf[bufferIdx];
 
     for (int i = 0; i < formatter.len; i++)
     {
@@ -63,12 +65,10 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
             assert(argCount < FMT_ARG_BUF_MAX);
 
             FmtHeader* h = va_arg(args, FmtHeader*);
-            opt.arg_buffer[argCount].header = h;
-            opt.arg_buffer[argCount].placholder_idx = i;
-            opt.arg_buffer[argCount].expanded =
-                h->fmt_fn(&String_Mem.transient, h);
-            stringLen +=
-                opt.arg_buffer[argCount].expanded.len - PLACEHOLDER_LEN;
+            buffer[argCount].header = h;
+            buffer[argCount].placholder_idx = i;
+            buffer[argCount].expanded = h->fmt_fn(&String_Mem.transient, h);
+            stringLen += buffer[argCount].expanded.len - PLACEHOLDER_LEN;
             argCount++;
         }
     }
@@ -78,8 +78,8 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
     int formatterPos = 0;
     for (int arg = 0; arg < argCount; arg++)
     {
-        int fmtArgPos = opt.arg_buffer[arg].placholder_idx;
-        str expanded = opt.arg_buffer[arg].expanded;
+        int fmtArgPos = buffer[arg].placholder_idx;
+        str expanded = buffer[arg].expanded;
         int fmtSectionLen = fmtArgPos - formatterPos;
         memcpy(writePos, formatter.chars + formatterPos, fmtSectionLen);
         writePos += fmtSectionLen;
@@ -99,6 +99,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
 
     *writePos = 0;
 
+    release_arg_buf(bufferIdx);
     // NOTE: sometimes we need to keep the transient buffer
     // because the call is a SUB formatting of another string
     // so we can't clear it yet, else strings get overwritten
