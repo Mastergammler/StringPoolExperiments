@@ -9,12 +9,18 @@ void pool_init(StringPool* pool, uint64_t size)
     memset(pool->memory, SENTINEL, size);
 }
 
-void str_init(uint64_t poolSize, uint64_t printBuffer,
-                  uint64_t expandBufferSize)
+/*
+ * NOTE: because of build order problems, we just take a pointer here to the
+ * struct, so that we don't need to depend on a 'extern' value
+ * Because else we might run into trouble during linking (catch 22)
+ */
+void str_init(StringMemory* allocation, uint64_t poolSize, uint64_t printBuffer,
+              uint64_t expandBufferSize)
 {
-    StrMemory.print_buffer.ring_buffer = true;
+    StrMemory = allocation;
+    StrMemory->print_buffer.ring_buffer = true;
 
-    pool_init(&StrMemory.persistent, poolSize);
-    pool_init(&StrMemory.print_buffer, printBuffer);
-    pool_init(&StrMemory.transient, expandBufferSize);
+    pool_init(&StrMemory->persistent, poolSize);
+    pool_init(&StrMemory->print_buffer, printBuffer);
+    pool_init(&StrMemory->transient, expandBufferSize);
 }

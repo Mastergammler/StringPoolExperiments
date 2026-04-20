@@ -1,4 +1,5 @@
 #include "module/alloc.c"
+#include "module/compare.c"
 #include "module/debug.c"
 #include "module/format.c"
 #include "module/init.c"

@@ -51,7 +51,7 @@ str expand_ptr(StringPool* pool, FmtHeader* header)
  * -> This buffer can only be used by one thread at a time
  * => There is no mechanism to manage access of multiple threads!
  */
-str format_valist(StorageOptions opt, str formatter, va_list args)
+str format_valist(StrPoolOptions opt, str formatter, va_list args)
 {
     int stringLen = formatter.len;
     int argCount = 0;
@@ -67,7 +67,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
             FmtHeader* h = va_arg(args, FmtHeader*);
             buffer[argCount].header = h;
             buffer[argCount].placholder_idx = i;
-            buffer[argCount].expanded = h->fmt_fn(&StrMemory.transient, h);
+            buffer[argCount].expanded = h->fmt_fn(&StrMemory->transient, h);
             stringLen += buffer[argCount].expanded.len - PLACEHOLDER_LEN;
             argCount++;
         }
@@ -105,7 +105,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
     // so we can't clear it yet, else strings get overwritten
     if (!opt.keep_transients)
     {
-        pool_reset(&StrMemory.transient);
+        pool_reset(&StrMemory->transient);
     }
     va_end(args);
 
@@ -118,7 +118,7 @@ str format_valist(StorageOptions opt, str formatter, va_list args)
  * PERF: is the opt object with it's own static pool too much overhead?
  * Or is that fine?
  */
-str format_pool(StorageOptions opt, const char* formatter, ...)
+str format_pool(StrPoolOptions opt, const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
@@ -130,7 +130,7 @@ str str_formatc(const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StorageOptions opt = {&StrMemory.persistent};
+    StrPoolOptions opt = {&StrMemory->persistent};
     return format_valist(opt, str_static(formatter), args);
 }
 
@@ -139,6 +139,6 @@ str str_format(str formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StorageOptions opt = {&StrMemory.persistent};
+    StrPoolOptions opt = {&StrMemory->persistent};
     return format_valist(opt, formatter, args);
 }

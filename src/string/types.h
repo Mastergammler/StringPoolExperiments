@@ -5,12 +5,13 @@
 #define FMT_ARG_BUF_COUNT 4
 
 #include <stdbool.h>
+#include <stddef.h>
 #include <stdint.h>
 
 typedef struct
 {
     const char* chars;
-    int len;
+    uint32_t len;
 
     /* if the null terminator is present in the storage location */
     bool null_terminated;
@@ -107,6 +108,6 @@ typedef struct
 {
     StringPool* pool;
     bool keep_transients;
-} StorageOptions;
+} StrPoolOptions;
 
 #endif

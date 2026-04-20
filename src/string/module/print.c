@@ -21,7 +21,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     // For async handling, the buffer needs to be large enough,
     // that new strings don't override previous ones and lead to garbage
     // print output
-    StorageOptions opt = {&StrMemory.print_buffer};
+    StrPoolOptions opt = {&StrMemory->print_buffer};
     str string = format_valist(opt, tmpl, args);
     if (string.len == 0)
     {
@@ -244,8 +244,8 @@ str format_float(StringPool* pool, float f, int decimals)
     int padding =
         decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
 
-    str padStr = string_repeat(&StrMemory.transient, str_static("0"), padding);
-    StorageOptions opt = {pool, true};
+    str padStr = string_repeat(&StrMemory->transient, str_static("0"), padding);
+    StrPoolOptions opt = {pool, true};
     return format_pool(opt, "%.%%", INT(high), STR(padStr), INT(roundedNum));
 }
 
@@ -261,7 +261,7 @@ str format_str(StringPool* pool, str string)
         previewDots = str_static("...");
     }
 
-    StorageOptions opt = {pool, true};
+    StrPoolOptions opt = {pool, true};
     str formatted = format_pool(opt, "str{ %: '%%', len: %, %, %, % }",
                                 PTR((void*)string.chars), STR(dataPreview),
                                 STR(previewDots), INT(string.len),

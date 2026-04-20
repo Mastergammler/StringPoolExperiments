@@ -6,8 +6,6 @@
 
 #include <stdio.h>
 
-StringMemory StrMemory;
-
 void test_simple_perf(int iterations)
 {
     Timer perf = {};
@@ -59,7 +57,7 @@ void test_basic_formatting()
     str_print(str_fmt_bin(0b11001));
     str_print(printBin2);
     str_print(str_fmt_bin(-12));
-    str_print(str_fmt_ptr(&StrMemory.persistent));
+    str_print(str_fmt_ptr(&StrMemory->persistent));
     str_print(str_fmt_b(12));
     str_print(str_fmt_b(false));
     str_print(str_fmt_i(12));
@@ -90,12 +88,12 @@ void test2()
     float formatTime = timer_elapsed_ms(&t);
     printf("Buffer Init: %.3f ms\n", initTime);
     float pfFormatTime = timer_elapsed_ms(&t);
-    str_printc("Own f-format: % ms\nPrintf f-format: % ms", FLOAT(formatTime, 4),
-          FLOAT(pfFormatTime, 4));
+    str_printc("Own f-format: % ms\nPrintf f-format: % ms",
+               FLOAT(formatTime, 4), FLOAT(pfFormatTime, 4));
 
     timer_elapsed_ms(&t);
     str tmpl = str_alloc("This is a static string template. % time we already "
-                        "used it. \nObj: %");
+                         "used it. \nObj: %");
 
     int iterations = 20;
     for (int i = 0; i < iterations; i++)
@@ -114,10 +112,11 @@ void test2()
     str_printc("-%-%- %:%", STR(a), STR(b), INT(0b1101101), INT_BIN(0b1101101));
     float threeFormats = timer_elapsed_ms(&t);
     str_printc("| % ms : % formats | % ms other formats", FLOAT(aFewFormats, 3),
-          INT(iterations), FLOAT(threeFormats, 3));
+               INT(iterations), FLOAT(threeFormats, 3));
 
     str_printc("% % % % %", FLOAT(aFewFormats, 0), FLOAT(aFewFormats, 1),
-          FLOAT(aFewFormats, 2), FLOAT(aFewFormats, 3), FLOAT(aFewFormats, 4));
+               FLOAT(aFewFormats, 2), FLOAT(aFewFormats, 3),
+               FLOAT(aFewFormats, 4));
 
     str_printc("> ipos % - ineg % - ibin %", INT(5), INT(-7), INT_BIN(19));
 
@@ -128,23 +127,24 @@ int main(int argc, char* argv[])
 {
     Timer t = {};
     timer_start(&t);
-    str_init(1024 * 1, 256, 256);
+    StringMemory mem = {};
+    str_init(&mem, 1024 * 1, 256, 256);
 
     test2();
 
     str formatted =
         str_formatc("% - % - % - % - %", FLOAT(1.005, 5), FLOAT(1.005, 4),
-               FLOAT(1.005, 3), FLOAT(0.07, 2), FLOAT(0.07, 1));
+                    FLOAT(1.005, 3), FLOAT(0.07, 2), FLOAT(0.07, 1));
 
     timer_elapsed_ms(&t);
-    debug_print_pool(StrMemory.persistent, 64);
-    debug_print_pool(StrMemory.print_buffer, 64);
-    debug_print_pool(StrMemory.transient, 64);
+    debug_print_pool(mem.persistent, 64);
+    debug_print_pool(mem.print_buffer, 64);
+    debug_print_pool(mem.transient, 64);
     float printPoolTime = timer_elapsed_ms(&t);
     float programTime = timer_ms_since_start(&t);
 
-    str_printc("| % ms print pool | % ms program runtime |", FLOAT(printPoolTime, 3),
-          FLOAT(programTime, 3));
+    str_printc("| % ms print pool | % ms program runtime |",
+               FLOAT(printPoolTime, 3), FLOAT(programTime, 3));
 
     return 0;
 }

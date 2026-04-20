@@ -15,6 +15,7 @@
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
 
+StringMemory* StrMemory;
 static FmtArgBufferStore FmtArgBuffers;
 
 static const char FMT_PH = '%';
@@ -54,8 +55,8 @@ str use_str(StringPool* pool, FmtHeader* header);
 str expand_ptr(StringPool* pool, FmtHeader* header);
 str expand_bool(StringPool* pool, FmtHeader* header);
 str string_repeat(StringPool* pool, str src, int num);
-str format_pool(StorageOptions opt, const char* formatter, ...);
-str format_valist(StorageOptions opt, str formatter, va_list args);
+str format_pool(StrPoolOptions opt, const char* formatter, ...);
+str format_valist(StrPoolOptions opt, str formatter, va_list args);
 
 #endif
 int get_and_reserve_arg_buf();
