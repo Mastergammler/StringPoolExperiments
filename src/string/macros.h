@@ -12,13 +12,13 @@
         expand_ptr, val                                                        \
     }
 
-#define BOOL(val)                                                              \
+#define BOO(val)                                                              \
     &(BoolFormat)                                                              \
     {                                                                          \
         expand_bool, val                                                       \
     }
 
-#define INT(val)                                                               \
+#define NUM(val)                                                               \
     &(IntFormat)                                                               \
     {                                                                          \
         expand_int, val, false                                                 \

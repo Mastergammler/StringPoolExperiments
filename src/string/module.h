@@ -12,6 +12,7 @@ extern "C"
                   uint64_t printBuffer, uint64_t expandBufferSize);
 
     str str_alloc(const char* cstr);
+    str str_allocn(const char* cstr, int len);
     str str_sub(str parent, int from, int toExclusive);
     str str_static(const char* cstr);
     void str_append(str* src, str extension);
@@ -31,6 +32,7 @@ extern "C"
     str str_fmt_str(str string);
 
     bool str_equals(str a, str b);
+    bool str_equals_opt(str a, str b, StrCompareOptions opt);
 
 #ifdef __cplusplus
 }

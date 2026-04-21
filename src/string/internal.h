@@ -5,6 +5,7 @@
 #include "types.h"
 
 #include <assert.h>
+#include <ctype.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -15,7 +16,7 @@
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
 
-StringMemory* StrMemory;
+static StringMemory* StrMemory;
 static FmtArgBufferStore FmtArgBuffers;
 
 static const char FMT_PH = '%';
@@ -25,7 +26,7 @@ int clamp(int value, int min, int max);
 int clamp_max(int value, int ceilingEx);
 int clamp_min(int value, int floorInc);
 
-str string_alloc(StringPool* pool, const char* cstr);
+str string_alloc(StringPool* pool, const char* cstr, int len);
 void string_append(StringPool* pool, str* src, str extension);
 
 void debug_print_pool(StringPool pool, int stride);
@@ -58,6 +59,7 @@ str string_repeat(StringPool* pool, str src, int num);
 str format_pool(StrPoolOptions opt, const char* formatter, ...);
 str format_valist(StrPoolOptions opt, str formatter, va_list args);
 
-#endif
 int get_and_reserve_arg_buf();
 void release_arg_buf(int index);
+bool str_equals_options(str a, str b, StrCompareOptions opt);
+#endif

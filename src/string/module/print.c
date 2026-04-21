@@ -246,7 +246,7 @@ str format_float(StringPool* pool, float f, int decimals)
 
     str padStr = string_repeat(&StrMemory->transient, str_static("0"), padding);
     StrPoolOptions opt = {pool, true};
-    return format_pool(opt, "%.%%", INT(high), STR(padStr), INT(roundedNum));
+    return format_pool(opt, "%.%%", NUM(high), STR(padStr), NUM(roundedNum));
 }
 
 /*
@@ -264,8 +264,8 @@ str format_str(StringPool* pool, str string)
     StrPoolOptions opt = {pool, true};
     str formatted = format_pool(opt, "str{ %: '%%', len: %, %, %, % }",
                                 PTR((void*)string.chars), STR(dataPreview),
-                                STR(previewDots), INT(string.len),
-                                BOOL(string.null_terminated),
-                                BOOL(string.is_slice), BOOL(string.is_static));
+                                STR(previewDots), NUM(string.len),
+                                BOO(string.null_terminated),
+                                BOO(string.is_slice), BOO(string.is_static));
     return formatted;
 }

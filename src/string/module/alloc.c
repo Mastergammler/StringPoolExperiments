@@ -2,12 +2,11 @@
 
 // copy string into own pool
 // -> including null terminator
-str string_alloc(StringPool* pool, const char* cstr)
+str string_alloc(StringPool* pool, const char* cstr, int len)
 {
-    int len = strlen(cstr);
-
     char* strStart = pool_use(pool, STR_SIZE(len));
     memcpy(strStart, cstr, STR_SIZE(len));
+    strStart[len] = 0;
 
     return (str){.chars = strStart,
                  .len = len,

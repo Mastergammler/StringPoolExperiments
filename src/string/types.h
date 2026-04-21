@@ -59,6 +59,11 @@ struct FmtHeader
 
 typedef struct
 {
+    bool case_insensitive;
+} StrCompareOptions;
+
+typedef struct
+{
     FmtHeader header;
     float value;
     int decimals;

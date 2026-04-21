@@ -1,31 +1,37 @@
 #include "internal.h"
 #include "module.h"
+#include "types.h"
 
-inline void str_print(str string, ...)
+void str_print(str string, ...)
 {
     va_list args;
     va_start(args, string);
     print_ln(string, stdout, args);
 }
 
-inline void str_printc(const char* cstr, ...)
+void str_printc(const char* cstr, ...)
 {
     va_list args;
     va_start(args, cstr);
     print_str(cstr, stdout, args);
 }
 
-inline str str_alloc(const char* cstr)
+str str_alloc(const char* cstr)
 {
-    return string_alloc(&StrMemory->persistent, cstr);
+    return string_alloc(&StrMemory->persistent, cstr, strlen(cstr));
 }
 
-inline void str_append(str* src, str extension)
+str str_allocn(const char* cstr, int len)
+{
+    return string_alloc(&StrMemory->persistent, cstr, len);
+}
+
+void str_append(str* src, str extension)
 {
     string_append(&StrMemory->persistent, src, extension);
 }
 
-inline void str_appendc(str* src, const char* extension)
+void str_appendc(str* src, const char* extension)
 {
     string_append(&StrMemory->persistent, src, str_static(extension));
 }
@@ -47,31 +53,41 @@ str str_static(const char* cstr)
 //  => This is a bit strange, or do i need it for my own type expansion?
 //  => Probably? But then i would need the base ones, and not this ones
 //  => Writing in to persisten memory is not that usefull here!
-inline str str_fmt_bin(int num)
+str str_fmt_bin(int num)
 {
     return format_binary(&StrMemory->persistent, num);
 }
-inline str str_fmt_ptr(void* ptr)
+str str_fmt_ptr(void* ptr)
 {
     return format_ptr(&StrMemory->persistent, ptr);
 }
-inline str str_fmt_b(bool boolean)
+str str_fmt_b(bool boolean)
 {
     return format_bool(&StrMemory->persistent, boolean);
 }
-inline str str_fmt_i(int num)
+str str_fmt_i(int num)
 {
     return format_int(&StrMemory->persistent, num);
 }
-inline str str_pad_left(str original, char c, int n)
+str str_pad_left(str original, char c, int n)
 {
     return format_pad_left(&StrMemory->persistent, original, c, n);
 }
-inline str str_fmt_f(float f, int decimals)
+str str_fmt_f(float f, int decimals)
 {
     return format_float(&StrMemory->persistent, f, decimals);
 }
-inline str str_fmt_str(str string)
+str str_fmt_str(str string)
 {
     return format_str(&StrMemory->persistent, string);
+}
+
+bool str_equals(str a, str b)
+{
+    return str_equals_options(a, b, (StrCompareOptions){false});
+}
+
+bool str_equals_opt(str a, str b, StrCompareOptions opt)
+{
+    return str_equals_options(a, b, opt);
 }
