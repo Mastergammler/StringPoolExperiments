@@ -123,14 +123,26 @@ void test2()
     str_printc("'%' - %", STR(a), STR_OBJ(a));
 }
 
-int main(int argc, char* argv[])
+IntFormat* pInMethod()
+{
+    IntFormat* fmt = NUM(5);
+    int dumme = 123455;
+    IntFormat actualObj = *fmt;
+    printf("%p %i\n", fmt, fmt->value);
+    printf("Actual: %p %i\n", &actualObj, actualObj.value);
+    return fmt;
+}
+
+void test_compares()
 {
     Timer t = {};
     timer_start(&t);
-    StringMemory mem = {};
-    str_init(&mem, 1024 * 1, 256, 256);
 
-    test2();
+    IntFormat* fmt = pInMethod();
+    IntFormat actualOutside = *fmt;
+    printf("ActualOutside: %p %i\n", &actualOutside, actualOutside.value);
+    fmt->value = 7;
+    printf("Outside: %p %i\n", fmt, fmt->value);
 
     str formatted =
         str_formatc("% - % - % - % - %", FLOAT(1.005, 5), FLOAT(1.005, 4),
@@ -143,19 +155,36 @@ int main(int argc, char* argv[])
     str justLonger = str_static("ToCompare!!");
 
     timer_elapsed_ms(&t);
-
     StrCompareOptions caseInsensitive = {true};
     bool notLower = str_equals(first, firstLower);
     bool withLower = str_equals_opt(first, firstLower, caseInsensitive);
     bool notPart = str_equals(first, partOnly);
     bool notAtAll = str_equals(first, doesntMatch);
     bool notLonger = str_equals_opt(first, justLonger, caseInsensitive);
-
     float cmpTime = timer_elapsed_ms(&t);
 
     str_printc("| %  ms for 5 comparisons | % (t %) % % %", FLOAT(cmpTime, 5),
                BOO(notLower), BOO(withLower), BOO(notPart), BOO(notAtAll),
                BOO(notLonger));
+}
+
+int main(int argc, char* argv[])
+{
+    Timer t = {};
+    timer_start(&t);
+    StringMemory mem = {};
+    str_init(&mem, 1024 * 1, 256, 0, 256);
+
+    float num = 3.97152;
+    float num2 = 3.31;
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% [0-2]%", FLOAT(num, 0),
+               FLOAT(num, 1), FLOAT(num, 2), FLOAT(num, 3), FLOAT(num, 4),
+               FLOAT(num, 5), FLOAT(num2, 0));
+
+    float multi = -3.9999;
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", FLOAT(multi, 0),
+               FLOAT(multi, 1), FLOAT(multi, 2), FLOAT(multi, 3),
+               FLOAT(multi, 4), FLOAT(multi, 5));
 
     str partAlloc = str_allocn("This is my string", 6);
     str_printc("%", STR(partAlloc));

@@ -16,50 +16,58 @@
 #define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
 
-static StringMemory* StrMemory;
-static FmtArgBufferStore FmtArgBuffers;
+#ifdef __cplusplus
+extern "C"
+{
+#endif
 
-static const char FMT_PH = '%';
-static const int PLACEHOLDER_LEN = 1;
+    static StringMemory* StrMemory;
+    static FmtArgBufferStore FmtArgBuffers;
 
-int clamp(int value, int min, int max);
-int clamp_max(int value, int ceilingEx);
-int clamp_min(int value, int floorInc);
+    static const char FMT_PH = '%';
+    static const int PLACEHOLDER_LEN = 1;
 
-str string_alloc(StringPool* pool, const char* cstr, int len);
-void string_append(StringPool* pool, str* src, str extension);
+    int clamp(int value, int min, int max);
+    int clamp_max(int value, int ceilingEx);
+    int clamp_min(int value, int floorInc);
 
-void debug_print_pool(StringPool pool, int stride);
-void pool_init(StringPool* pool, uint64_t size);
-void pool_reset(StringPool* pool);
-void* pool_check_next(StringPool* pool, int maxSize);
-void* pool_use(StringPool* pool, int size);
+    str string_alloc(StringPool* pool, const char* cstr, int len);
+    void string_append(StringPool* pool, str* src, str extension);
 
-str format_binary(StringPool* pool, int num);
-str format_ptr(StringPool* pool, void* ptr);
-str format_bool(StringPool* pool, bool boolean);
-str format_int(StringPool* pool, int num);
-str format_pad_left(StringPool* pool, str original, char c, int n);
-str format_float(StringPool* pool, float f, int decimals);
-str format_str(StringPool* pool, str string);
-str format_expand(str formatter, ...);
-str format_cstr(const char* formatter, ...);
+    void debug_print_pool(StringPool pool, int stride);
+    void pool_init(StringPool* pool, uint64_t size);
+    void* pool_check_next(StringPool* pool, int maxSize);
+    void* pool_use(StringPool* pool, int size);
 
-void print_ln(str string, FILE* stream, va_list args);
-void print_str(const char* cstr, FILE* stream, va_list args);
+    str format_binary(StringPool* pool, int num);
+    str format_ptr(StringPool* pool, void* ptr);
+    str format_bool(StringPool* pool, bool boolean);
+    str format_int(StringPool* pool, int num);
+    str format_pad_left(StringPool* pool, str original, char c, int n);
+    str format_float(StringPool* pool, float f, int decimals);
+    str format_str(StringPool* pool, str string);
+    str format_expand(str formatter, ...);
+    str format_cstr(const char* formatter, ...);
 
-str expand_int(StringPool* pool, FmtHeader* header);
-str expand_float(StringPool* pool, FmtHeader* header);
-str expand_str(StringPool* pool, FmtHeader* header);
-str use_str(StringPool* pool, FmtHeader* header);
+    void print_ln(str string, FILE* stream, va_list args);
+    void print_str(const char* cstr, FILE* stream, va_list args);
 
-str expand_ptr(StringPool* pool, FmtHeader* header);
-str expand_bool(StringPool* pool, FmtHeader* header);
-str string_repeat(StringPool* pool, str src, int num);
-str format_pool(StrPoolOptions opt, const char* formatter, ...);
-str format_valist(StrPoolOptions opt, str formatter, va_list args);
+    str expand_int(StringPool* pool, FmtHeader* header);
+    str expand_float(StringPool* pool, FmtHeader* header);
+    str expand_str(StringPool* pool, FmtHeader* header);
+    str use_str(StringPool* pool, FmtHeader* header);
 
-int get_and_reserve_arg_buf();
-void release_arg_buf(int index);
-bool str_equals_options(str a, str b, StrCompareOptions opt);
+    str expand_ptr(StringPool* pool, FmtHeader* header);
+    str expand_bool(StringPool* pool, FmtHeader* header);
+    str string_repeat(StringPool* pool, str src, int num);
+    str format_valist(StrPoolOptions opt, str formatter, va_list args);
+
+    int get_and_reserve_arg_buf();
+    void release_arg_buf(int index);
+    bool str_equals_options(str a, str b, StrCompareOptions opt);
+
+#ifdef __cplusplus
+}
+#endif
+
 #endif

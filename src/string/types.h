@@ -42,8 +42,9 @@ typedef struct
 typedef struct
 {
     StringPool persistent;
-    StringPool print_buffer;
     StringPool transient;
+    StringPool print_buffer;
+    StringPool frame_buffer;
 } StringMemory;
 
 typedef struct FmtHeader FmtHeader;

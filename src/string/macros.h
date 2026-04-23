@@ -1,5 +1,8 @@
 #include "internal.h"
 
+// NOTE: were creating compound literals as lvalues here
+// -> so these remain valid for the function call duration
+
 #define FLOAT(f, dec)                                                          \
     &(FloatFormat)                                                             \
     {                                                                          \
@@ -12,7 +15,7 @@
         expand_ptr, val                                                        \
     }
 
-#define BOO(val)                                                              \
+#define BOO(val)                                                               \
     &(BoolFormat)                                                              \
     {                                                                          \
         expand_bool, val                                                       \

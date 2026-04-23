@@ -35,7 +35,7 @@ void* pool_use(StringPool* pool, int size)
     return useStart;
 }
 
-void pool_reset(StringPool* pool)
+void str_pool_reset(StringPool* pool)
 {
     pool->cursor_idx = 0;
 }

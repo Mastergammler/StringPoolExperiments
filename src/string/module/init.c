@@ -15,12 +15,13 @@ void pool_init(StringPool* pool, uint64_t size)
  * Because else we might run into trouble during linking (catch 22)
  */
 void str_init(StringMemory* allocation, uint64_t poolSize, uint64_t printBuffer,
-              uint64_t expandBufferSize)
+              uint64_t frameBuffer, uint64_t expandBufferSize)
 {
     StrMemory = allocation;
     StrMemory->print_buffer.ring_buffer = true;
 
     pool_init(&StrMemory->persistent, poolSize);
     pool_init(&StrMemory->print_buffer, printBuffer);
+    pool_init(&StrMemory->frame_buffer, frameBuffer);
     pool_init(&StrMemory->transient, expandBufferSize);
 }

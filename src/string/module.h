@@ -9,7 +9,9 @@ extern "C"
 {
 #endif
     void str_init(StringMemory* allocation, uint64_t poolSize,
-                  uint64_t printBuffer, uint64_t expandBufferSize);
+                  uint64_t printBuffer, uint64_t frameBuffer,
+                  uint64_t expandBufferSize);
+    void str_pool_reset(StringPool* pool);
 
     str str_alloc(const char* cstr);
     str str_allocn(const char* cstr, int len);
@@ -22,6 +24,8 @@ extern "C"
 
     str str_formatc(const char* formatter, ...);
     str str_format(str tmplStr, ...);
+    str str_formatc_opt(StrPoolOptions opt, const char* formatter, ...);
+    str str_format_opt(StrPoolOptions opt, str formatter, ...);
 
     str str_fmt_bin(int num);
     str str_fmt_ptr(void* ptr);

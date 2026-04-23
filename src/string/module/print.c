@@ -224,11 +224,24 @@ str format_pad_left(StringPool* pool, str original, char c, int n)
 
 str format_float(StringPool* pool, float f, int decimals)
 {
+    StrPoolOptions opt = {pool, true};
+
+    str sign = f < 0 ? str_static("-") : (str){};
     // this is the reason for an expander pool
     // -> Because like this i would just pollute the actual string pool
-    int high = f;
-    float decShifted = (f - high) * pow(10, decimals);
-    int roundedNum = round(decShifted);
+    float abs = fabs(f);
+    int high = abs;
+    int factor = pow(10, decimals);
+    float decShifted = (abs - high) * factor;
+    int roundedNum = fabs(round(decShifted));
+
+    if (decimals == 0)
+    {
+        // it's either 0 or 1 then
+        // -> we might have a carry
+        high += roundedNum;
+        return str_formatc_opt(opt, "%%.", STR(sign), NUM(high));
+    }
 
     int decimalPlacesUsed = decimals;
     for (int i = decimals - 1; i >= 0; i--)
@@ -241,12 +254,22 @@ str format_float(StringPool* pool, float f, int decimals)
         }
     }
 
+    if (roundedNum == factor)
+    {
+        // when we have carry then after comma is always 0
+        // -> In that case we only have a single used value
+        high++;
+        roundedNum -= factor;
+        decimalPlacesUsed = 1;
+    }
+
     int padding =
         decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
 
     str padStr = string_repeat(&StrMemory->transient, str_static("0"), padding);
-    StrPoolOptions opt = {pool, true};
-    return format_pool(opt, "%.%%", NUM(high), STR(padStr), NUM(roundedNum));
+
+    return str_formatc_opt(opt, "%%.%%", STR(sign), NUM(high), STR(padStr),
+                           NUM(roundedNum));
 }
 
 /*
@@ -262,10 +285,10 @@ str format_str(StringPool* pool, str string)
     }
 
     StrPoolOptions opt = {pool, true};
-    str formatted = format_pool(opt, "str{ %: '%%', len: %, %, %, % }",
-                                PTR((void*)string.chars), STR(dataPreview),
-                                STR(previewDots), NUM(string.len),
-                                BOO(string.null_terminated),
-                                BOO(string.is_slice), BOO(string.is_static));
+    str formatted = str_formatc_opt(
+        opt, "str{ %: '%%', len: %, %, %, % }", PTR((void*)string.chars),
+        STR(dataPreview), STR(previewDots), NUM(string.len),
+        BOO(string.null_terminated), BOO(string.is_slice),
+        BOO(string.is_static));
     return formatted;
 }
