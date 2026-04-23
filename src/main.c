@@ -188,6 +188,8 @@ int main(int argc, char* argv[])
 
     str partAlloc = str_allocn("This is my string", 6);
     str_printc("%", STR(partAlloc));
+    str_printc("I'm a freaking ninja now!");
+    str_printc("That reall kind of works huh?");
 
     timer_elapsed_ms(&t);
     debug_print_pool(mem.persistent, 64);

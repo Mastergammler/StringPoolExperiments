@@ -3,6 +3,7 @@
 
 void timer_start(Timer* timer)
 {
+
     clock_gettime(CLOCK_REALTIME, &timer->start);
     timer->last = timer->start;
 }
