@@ -1,5 +1,3 @@
-
-
 rule cc
     command = tcc $cflags -MD -MF $out.d -c -o $out $in 
     depfile = $out.d

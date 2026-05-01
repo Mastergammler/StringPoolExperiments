@@ -65,8 +65,8 @@ str format_ptr(StringPool* pool, void* ptr)
 
         if (stringStarted || (hiVal || loVal))
         {
-            *curC++ = HEX_DIGITS[hiVal];
-            *curC++ = HEX_DIGITS[loVal];
+            *curC++ = HEX_DIGITS[(uint8_t)hiVal];
+            *curC++ = HEX_DIGITS[(uint8_t)loVal];
             actualLen += 2;
         }
     }
@@ -135,65 +135,65 @@ str format_binary(StringPool* pool, int num)
         .chars = actualStr, .len = actualLength - 1, .null_terminated = true};
 }
 
-str format_int(StringPool* pool, int num)
+/*
+ * Length excluding sign
+ */
+static int num_len(int num)
+{
+    int val = abs(num);
+    int cmp = 10;
+    int len = 1;
+
+    while (val >= cmp && cmp > 0)
+    {
+        len++;
+        cmp *= 10;
+    }
+
+    return len;
+}
+
+str format_int(StringPool* pool, int num, int places)
 {
     bool isNeg = num & INT_SIGN;
-    // 2 Bil + sign
-    int maxLen = 11;
-    // + null term
-    int maxSize = 12;
 
-    int actualLen = 0;
+    int numLen = num_len(num);
+    // extra space for sign
+    int extraSpace = isNeg ? 1 : 0;
+    int padding = 0;
 
-    char* curC = pool_check_next(pool, maxSize);
-    char* startC = curC;
+    if (places > numLen)
+    {
+        padding = places - numLen;
+    }
 
+    // NOTE : I know the length beforehand, so i could defer printing
+    int textLen = numLen + extraSpace + padding;
+    char* text = pool_use(pool, STR_SIZE(textLen));
+
+    char* cur = text;
     if (isNeg)
     {
-        num = -num;
+        num = abs(num);
+        *cur++ = '-';
     }
 
-    int next = 1;
-    while (next)
+    for (int i = 0; i < padding; i++)
     {
-        int remainder = num % 10;
-        *curC++ = remainder + ASCII_NUM_OFFSET;
-        actualLen++;
-
-        num = num / 10;
-        next = num;
+        *cur++ = '0';
     }
 
-    if (isNeg)
+    for (int i = 1; i <= numLen; i++)
     {
-        *curC++ = '-';
-        actualLen++;
+        int cmp = pow(10, numLen - i);
+        int leader = num / cmp;
+        num -= leader * cmp;
+        *cur++ = leader + ASCII_NUM_OFFSET;
     }
 
-    // swap indices
-    int lastIdx = actualLen - 1;
-    for (int i = 0; i < actualLen / 2; i++)
-    {
-        int first = i;
-        int last = lastIdx - i;
+    *cur = 0;
 
-        if (last > first)
-        {
-            char tmp = startC[first];
-            startC[first] = startC[last];
-            startC[last] = tmp;
-        }
-    }
-
-    // TODO: reverse string
-
-    *curC = 0;
-    actualLen++;
-
-    char* actualStr = pool_use(pool, actualLen);
-
-    return (str){
-        .chars = actualStr, .len = actualLen - 1, .null_terminated = true};
+    return (str){.chars = text, .len = textLen, .null_terminated = true};
 }
 
 /*

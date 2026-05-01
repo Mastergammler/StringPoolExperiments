@@ -65,9 +65,14 @@ str str_fmt_b(bool boolean)
 {
     return format_bool(&StrMemory->persistent, boolean);
 }
-str str_fmt_i(int num)
+
+/*
+ * pass 0 to keep the default places
+ * else we'll pad zeros
+ */
+str str_fmt_i(int num, int places)
 {
-    return format_int(&StrMemory->persistent, num);
+    return format_int(&StrMemory->persistent, num, places);
 }
 str str_pad_left(str original, char c, int n)
 {

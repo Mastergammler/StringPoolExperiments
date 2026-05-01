@@ -74,6 +74,7 @@ typedef struct
 {
     FmtHeader header;
     int value;
+    int places;
     bool binary;
 
 } IntFormat;

@@ -60,9 +60,9 @@ void test_basic_formatting()
     str_print(str_fmt_ptr(&StrMemory->persistent));
     str_print(str_fmt_b(12));
     str_print(str_fmt_b(false));
-    str_print(str_fmt_i(12));
-    str_print(str_fmt_i(-17));
-    str_print(str_fmt_i(134775));
+    str_print(str_fmt_i(12, 0));
+    str_print(str_fmt_i(-17, 0));
+    str_print(str_fmt_i(134775, 0));
     str_print(str_pad_left(str_static("1"), '0', 5));
 
     timer_elapsed_ms(&t);
@@ -168,13 +168,10 @@ void test_compares()
                BOO(notLonger));
 }
 
-int main(int argc, char* argv[])
+void testing_floats()
 {
     Timer t = {};
-    timer_start(&t);
-    StringMemory mem = {};
-    str_init(&mem, 1024 * 1, 256, 0, 256);
-
+    timer_elapsed_ms(&t);
     float num = 3.97152;
     float num2 = 3.31;
     str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% [0-2]%", FLOAT(num, 0),
@@ -185,11 +182,30 @@ int main(int argc, char* argv[])
     str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", FLOAT(multi, 0),
                FLOAT(multi, 1), FLOAT(multi, 2), FLOAT(multi, 3),
                FLOAT(multi, 4), FLOAT(multi, 5));
+    float format10 = timer_elapsed_ms(&t);
+    str_printc("Formatting 10 floats: %", FLOAT(format10, 3));
 
     str partAlloc = str_allocn("This is my string", 6);
     str_printc("%", STR(partAlloc));
     str_printc("I'm a freaking ninja now!");
     str_printc("That reall kind of works huh?");
+}
+
+int main(int argc, char* argv[])
+{
+    Timer t = {};
+    timer_start(&t);
+    StringMemory mem = {};
+    str_init(&mem, 1024 * 1, 256, 0, 256);
+
+    str_printc("% % % % % % %", NUM(1), NUM(12), NUM(237), NUM(5730),
+               NUM(-7738), NUM(50027), NUM(0));
+    str_printc("% % % % % %", NUM_PAD(5, 0), NUM_PAD(5, 1), NUM_PAD(5, 2),
+               NUM_PAD(5, 3), NUM_PAD(307, 5), NUM_PAD(0, 3));
+    str_printc("% % % % %", NUM_PAD(7, 7), NUM(10), NUM_PAD(10, 2), NUM(11),
+               NUM(100));
+
+    // testing_floats();
 
     timer_elapsed_ms(&t);
     debug_print_pool(mem.persistent, 64);

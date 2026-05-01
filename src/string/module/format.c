@@ -17,7 +17,7 @@ str expand_int(StringPool* pool, FmtHeader* header)
     }
     else
     {
-        return format_int(pool, format->value);
+        return format_int(pool, format->value, format->places);
     }
 }
 

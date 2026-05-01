@@ -42,7 +42,7 @@ extern "C"
     str format_binary(StringPool* pool, int num);
     str format_ptr(StringPool* pool, void* ptr);
     str format_bool(StringPool* pool, bool boolean);
-    str format_int(StringPool* pool, int num);
+    str format_int(StringPool* pool, int num, int places);
     str format_pad_left(StringPool* pool, str original, char c, int n);
     str format_float(StringPool* pool, float f, int decimals);
     str format_str(StringPool* pool, str string);

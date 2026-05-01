@@ -24,12 +24,19 @@
 #define NUM(val)                                                               \
     &(IntFormat)                                                               \
     {                                                                          \
-        expand_int, val, false                                                 \
+        expand_int, val, 0, false                                              \
     }
+
+#define NUM_PAD(val, pad)                                                      \
+    &(IntFormat)                                                               \
+    {                                                                          \
+        expand_int, val, pad, false                                            \
+    }
+
 #define INT_BIN(val)                                                           \
     &(IntFormat)                                                               \
     {                                                                          \
-        expand_int, val, true                                                  \
+        expand_int, val, 0, true                                               \
     }
 
 #define STR_OBJ(val)                                                           \

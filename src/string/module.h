@@ -30,7 +30,7 @@ extern "C"
     str str_fmt_bin(int num);
     str str_fmt_ptr(void* ptr);
     str str_fmt_b(bool boolean);
-    str str_fmt_i(int num);
+    str str_fmt_i(int num, int places);
     str str_pad_left(str original, char c, int n);
     str str_fmt_f(float f, int decimals);
     str str_fmt_str(str string);
