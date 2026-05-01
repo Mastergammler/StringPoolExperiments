@@ -227,6 +227,7 @@ str format_float(StringPool* pool, float f, int decimals)
     StrPoolOptions opt = {pool, true};
 
     str sign = f < 0 ? str_static("-") : (str){};
+
     // this is the reason for an expander pool
     // -> Because like this i would just pollute the actual string pool
     float abs = fabs(f);
@@ -235,41 +236,8 @@ str format_float(StringPool* pool, float f, int decimals)
     float decShifted = (abs - high) * factor;
     int roundedNum = fabs(round(decShifted));
 
-    if (decimals == 0)
-    {
-        // it's either 0 or 1 then
-        // -> we might have a carry
-        high += roundedNum;
-        return str_formatc_opt(opt, "%%.", STR(sign), NUM(high));
-    }
-
-    int decimalPlacesUsed = decimals;
-    for (int i = decimals - 1; i >= 0; i--)
-    {
-        int placesMin = pow(10, i);
-        if (roundedNum >= placesMin)
-        {
-            decimalPlacesUsed = (i + 1);
-            break;
-        }
-    }
-
-    if (roundedNum == factor)
-    {
-        // when we have carry then after comma is always 0
-        // -> In that case we only have a single used value
-        high++;
-        roundedNum -= factor;
-        decimalPlacesUsed = 1;
-    }
-
-    int padding =
-        decimals > decimalPlacesUsed ? decimals - decimalPlacesUsed : 0;
-
-    str padStr = string_repeat(&StrMemory->transient, str_static("0"), padding);
-
-    return str_formatc_opt(opt, "%%.%%", STR(sign), NUM(high), STR(padStr),
-                           NUM(roundedNum));
+    return str_formatc_opt(opt, "%%.%", STR(sign), NUM(high),
+                           NUM_PAD(roundedNum, decimals));
 }
 
 /*

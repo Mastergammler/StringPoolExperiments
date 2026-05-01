@@ -185,6 +185,12 @@ void testing_floats()
     float format10 = timer_elapsed_ms(&t);
     str_printc("Formatting 10 floats: %", FLOAT(format10, 3));
 
+    float leadingZero = 3.0007;
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", FLOAT(leadingZero, 0),
+               FLOAT(leadingZero, 1), FLOAT(leadingZero, 2),
+               FLOAT(leadingZero, 3), FLOAT(leadingZero, 4),
+               FLOAT(leadingZero, 5));
+
     str partAlloc = str_allocn("This is my string", 6);
     str_printc("%", STR(partAlloc));
     str_printc("I'm a freaking ninja now!");
@@ -205,7 +211,7 @@ int main(int argc, char* argv[])
     str_printc("% % % % %", NUM_PAD(7, 7), NUM(10), NUM_PAD(10, 2), NUM(11),
                NUM(100));
 
-    // testing_floats();
+    testing_floats();
 
     timer_elapsed_ms(&t);
     debug_print_pool(mem.persistent, 64);
