@@ -30,7 +30,6 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     else
     {
         fwrite(string.chars, 1, string.len, stream);
-        fputs("\n", stream);
     }
 }
 
@@ -169,7 +168,7 @@ str format_int(StringPool* pool, int num, int places)
 
     // NOTE : I know the length beforehand, so i could defer printing
     int textLen = numLen + extraSpace + padding;
-    char* text = pool_use(pool, STR_SIZE(textLen));
+    char* text = pool_use(pool, memory_size(pool, textLen));
 
     char* cur = text;
     if (isNeg)
@@ -191,9 +190,11 @@ str format_int(StringPool* pool, int num, int places)
         *cur++ = leader + ASCII_NUM_OFFSET;
     }
 
-    *cur = 0;
+    textLen += finalize_str(pool, text, textLen);
 
-    return (str){.chars = text, .len = textLen, .null_terminated = true};
+    return (str){.chars = text,
+                 .len = textLen,
+                 .null_terminated = !pool->neglect_null_termination};
 }
 
 /*

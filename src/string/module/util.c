@@ -38,3 +38,38 @@ int clamp(int value, int min, int max)
     int minned = clamp_min(value, min);
     return clamp_max(minned, max);
 }
+
+uint64_t memory_size(StringPool* pool, uint64_t charCount)
+{
+    int nullTermSpace = pool->neglect_null_termination ? 0 : 1;
+    int lfSpace = pool->add_linefeed ? 1 : 0;
+
+    uint64_t memorySize = charCount + nullTermSpace + lfSpace;
+    assert(memorySize >= charCount);
+
+    return memorySize;
+}
+
+/*
+ * We assume that enough buffer has been allocated,
+ * with the method memory_size
+ */
+int finalize_str(StringPool* pool, char* strStart, uint64_t charCount)
+{
+    int addStrLen = 0;
+
+    if (pool->add_linefeed)
+    {
+        addStrLen++;
+        // TODO: we donn't care about CR for now
+        strStart[charCount++] = '\n';
+    }
+
+    // null terminator doesn't count for string length
+    if (!pool->neglect_null_termination)
+    {
+        strStart[charCount] = 0;
+    }
+
+    return addStrLen;
+}

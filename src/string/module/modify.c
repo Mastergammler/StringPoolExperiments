@@ -24,15 +24,16 @@ str str_sub(str parent, int from, int toExclusive)
 void string_append(StringPool* pool, str* src, str extension)
 {
     int combinedLen = src->len + extension.len;
-    char* strStart = pool_use(pool, STR_SIZE(combinedLen));
+    char* strStart = pool_use(pool, memory_size(pool, combinedLen));
 
     memcpy(strStart, src->chars, src->len);
     memcpy(strStart + src->len, extension.chars, extension.len);
-    strStart[combinedLen] = 0;
+
+    combinedLen += finalize_str(pool, strStart, combinedLen);
 
     src->len = combinedLen;
     src->chars = strStart;
-    src->null_terminated = true;
+    src->null_terminated = !pool->neglect_null_termination;
     src->is_slice = false;
     src->is_static = false;
 
@@ -47,7 +48,7 @@ str string_repeat(StringPool* pool, str src, int num)
     int len = src.len * num;
     if (len <= 0) return (str){0};
 
-    char* mem = pool_use(pool, STR_SIZE(len));
+    char* mem = pool_use(pool, memory_size(pool, len));
     char* writePos = mem;
 
     for (int i = 0; i < num; i++)
@@ -58,7 +59,7 @@ str string_repeat(StringPool* pool, str src, int num)
         }
     }
 
-    *writePos = 0;
+    len += finalize_str(pool, mem, len);
 
-    return (str){mem, len, true};
+    return (str){mem, len, !pool->neglect_null_termination};
 }

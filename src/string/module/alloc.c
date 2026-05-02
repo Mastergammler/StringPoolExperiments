@@ -4,13 +4,14 @@
 // -> including null terminator
 str string_alloc(StringPool* pool, const char* cstr, int len)
 {
-    char* strStart = pool_use(pool, STR_SIZE(len));
-    memcpy(strStart, cstr, STR_SIZE(len));
-    strStart[len] = 0;
+
+    char* strStart = pool_use(pool, memory_size(pool, len));
+    memcpy(strStart, cstr, memory_size(pool, len));
+    len += finalize_str(pool, strStart, len);
 
     return (str){.chars = strStart,
                  .len = len,
-                 .null_terminated = true,
+                 .null_terminated = !pool->neglect_null_termination,
                  .is_slice = false,
                  .is_static = false};
 }
@@ -18,7 +19,7 @@ str string_alloc(StringPool* pool, const char* cstr, int len)
 /*
  * Actually moves the used pointer forward
  */
-void* pool_use(StringPool* pool, int size)
+void* pool_use(StringPool* pool, uint64_t size)
 {
     // NOTE: if we don't fit in the end section, we just start over
     // To be able to easily memcpy or print contiguous memory

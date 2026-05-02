@@ -19,6 +19,8 @@ void str_init(StringMemory* allocation, uint64_t poolSize, uint64_t printBuffer,
 {
     StrMemory = allocation;
     StrMemory->print_buffer.ring_buffer = true;
+    StrMemory->print_buffer.neglect_null_termination = true;
+    StrMemory->print_buffer.add_linefeed = true;
 
     pool_init(&StrMemory->persistent, poolSize);
     pool_init(&StrMemory->print_buffer, printBuffer);

@@ -13,7 +13,6 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define STR_SIZE(n) (n + 1)
 #define SENTINEL 0xf8
 
 #ifdef __cplusplus
@@ -37,7 +36,7 @@ extern "C"
     void debug_print_pool(StringPool pool, int stride);
     void pool_init(StringPool* pool, uint64_t size);
     void* pool_check_next(StringPool* pool, int maxSize);
-    void* pool_use(StringPool* pool, int size);
+    void* pool_use(StringPool* pool, uint64_t size);
 
     str format_binary(StringPool* pool, int num);
     str format_ptr(StringPool* pool, void* ptr);
@@ -65,6 +64,9 @@ extern "C"
     int get_and_reserve_arg_buf();
     void release_arg_buf(int index);
     bool str_equals_options(str a, str b, StrCompareOptions opt);
+
+    uint64_t memory_size(StringPool* pool, uint64_t charCount);
+    int finalize_str(StringPool* pool, char* strStart, uint64_t charCount);
 
 #ifdef __cplusplus
 }

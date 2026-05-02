@@ -36,6 +36,10 @@ typedef struct
      */
     uint64_t cursor_idx;
     bool ring_buffer;
+    /* do not add null terminator at the end */
+    bool neglect_null_termination;
+    /* add newline at the end */
+    bool add_linefeed;
 
 } StringPool;
 

@@ -73,7 +73,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
         }
     }
 
-    char* stringStart = pool_use(opt.pool, STR_SIZE(stringLen));
+    char* stringStart = pool_use(opt.pool, memory_size(opt.pool, stringLen));
     char* writePos = stringStart;
     int formatterPos = 0;
     for (int arg = 0; arg < argCount; arg++)
@@ -97,7 +97,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
         writePos += fmtSectionLen;
     }
 
-    *writePos = 0;
+    stringLen += finalize_str(opt.pool, stringStart, stringLen);
 
     release_arg_buf(bufferIdx);
     // NOTE: sometimes we need to keep the transient buffer
@@ -109,7 +109,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
     }
     va_end(args);
 
-    return (str){stringStart, stringLen, true};
+    return (str){stringStart, stringLen, !opt.pool->neglect_null_termination};
 }
 
 /*
