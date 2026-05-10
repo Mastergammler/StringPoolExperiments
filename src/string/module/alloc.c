@@ -42,6 +42,15 @@ void str_pool_reset(StringPool* pool)
 }
 
 /*
+ * Resetting to last cursor index
+ */
+void str_pool_reset_to(StringPool* pool, uint64_t pos)
+{
+    assert(pos <= pool->cursor_idx);
+    pool->cursor_idx = pos;
+}
+
+/*
  * Just checks if enough space is in principle available
  */
 void* pool_check_next(StringPool* pool, int maxSize)

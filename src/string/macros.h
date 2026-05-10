@@ -50,3 +50,9 @@
     {                                                                          \
         use_str, val                                                           \
     }
+
+#define LIT(val)                                                               \
+    &(StrFormat)                                                               \
+    {                                                                          \
+        use_str, str_static(val)                                               \
+    }

@@ -26,9 +26,42 @@ str str_allocn(const char* cstr, int len)
     return string_alloc(&StrMemory->persistent, cstr, len);
 }
 
+str str_alloc_opt(StrPoolOptions opt, const char* cstr)
+{
+    return string_alloc(opt.pool, cstr, strlen(cstr));
+}
+
+str str_allocn_opt(StrPoolOptions opt, const char* cstr, int len)
+{
+    return string_alloc(opt.pool, cstr, len);
+}
+
 void str_append(str* src, str extension)
 {
     string_append(&StrMemory->persistent, src, extension);
+}
+
+void str_append_opt(StrPoolOptions opt, str* src, str extension)
+{
+    string_append(opt.pool, src, extension);
+}
+
+str str_concat(str a, str b)
+{
+    string_append(&StrMemory->persistent, &a, b);
+    return a;
+}
+
+str str_concat_opt(StrPoolOptions opt, str a, str b)
+{
+    string_append(opt.pool, &a, b);
+    return a;
+}
+
+str str_concatc(str a, const char* cstr)
+{
+    string_append(&StrMemory->persistent, &a, str_static(cstr));
+    return a;
 }
 
 void str_appendc(str* src, const char* extension)
@@ -95,4 +128,14 @@ bool str_equals(str a, str b)
 bool str_equals_opt(str a, str b, StrCompareOptions opt)
 {
     return str_equals_options(a, b, opt);
+}
+
+bool str_ends_with(str a, str ending)
+{
+    return str_ends_with_options(a, ending, (StrCompareOptions){false});
+}
+
+bool str_ends_with_opt(str a, str ending, StrCompareOptions opt)
+{
+    return str_ends_with_options(a, ending, opt);
 }

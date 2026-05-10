@@ -73,3 +73,4 @@ extern "C"
 #endif
 
 #endif
+bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt);
