@@ -64,6 +64,31 @@ str str_concatc(str a, const char* cstr)
     return a;
 }
 
+StrSplitResult str_split_last(str src, char splitAt)
+{
+    return string_split_last(src, splitAt, (StrSplitOpt){});
+}
+
+str str_join(str* strings, int count, str delim)
+{
+    return string_join(&StrMemory->persistent, strings, count, delim);
+}
+str str_join_opt(StrPoolOptions opt, str* strings, int count, str delim)
+{
+    return string_join(opt.pool, strings, count, delim);
+}
+str str_joinc(str* strings, int count, const char* delim)
+{
+    return string_join(&StrMemory->persistent, strings, count,
+                       str_static(delim));
+}
+
+str str_joinc_opt(StrPoolOptions opt, str* strings, int count,
+                  const char* delim)
+{
+    return string_join(opt.pool, strings, count, str_static(delim));
+}
+
 void str_appendc(str* src, const char* extension)
 {
     string_append(&StrMemory->persistent, src, str_static(extension));
@@ -74,6 +99,12 @@ void str_appendc(str* src, const char* extension)
 //  and check if the pointer is within bounds
 str str_static(const char* cstr)
 {
+    // STFO: should i assert here?
+    //  -> i dunno, it seems a bit strange, and not very usefull?
+    // assert(cstr);
+
+    if (!cstr) return (str){};
+
     return (str){.chars = cstr,
                  .len = strlen(cstr),
                  .null_terminated = true,

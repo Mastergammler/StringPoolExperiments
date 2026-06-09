@@ -68,7 +68,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
             buffer[argCount].header = h;
             buffer[argCount].placholder_idx = i;
             buffer[argCount].expanded = h->fmt_fn(&StrMemory->transient, h);
-            stringLen += buffer[argCount].expanded.len - PLACEHOLDER_LEN;
+            stringLen += buffer[argCount].expanded.len - FMT_PH_LEN;
             argCount++;
         }
     }
@@ -85,7 +85,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
         writePos += fmtSectionLen;
 
         // skip placeholder
-        formatterPos += fmtSectionLen + PLACEHOLDER_LEN;
+        formatterPos += fmtSectionLen + FMT_PH_LEN;
         memcpy(writePos, expanded.chars, expanded.len);
         writePos += expanded.len;
     }

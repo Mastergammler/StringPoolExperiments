@@ -23,15 +23,15 @@ extern "C"
     static StringMemory* StrMemory;
     static FmtArgBufferStore FmtArgBuffers;
 
-    static const char FMT_PH = '%';
-    static const int PLACEHOLDER_LEN = 1;
-
     int clamp(int value, int min, int max);
     int clamp_max(int value, int ceilingEx);
     int clamp_min(int value, int floorInc);
 
+    StrSplitResult string_split_last(str src, char splitAt, StrSplitOpt opt);
+
     str string_alloc(StringPool* pool, const char* cstr, int len);
     void string_append(StringPool* pool, str* src, str extension);
+    str string_join(StringPool* pool, str* strings, int count, str delim);
 
     void debug_print_pool(StringPool pool, int stride);
     void pool_init(StringPool* pool, uint64_t size);
@@ -64,6 +64,7 @@ extern "C"
     int get_and_reserve_arg_buf();
     void release_arg_buf(int index);
     bool str_equals_options(str a, str b, StrCompareOptions opt);
+    bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt);
 
     uint64_t memory_size(StringPool* pool, uint64_t charCount);
     int finalize_str(StringPool* pool, char* strStart, uint64_t charCount);
@@ -73,4 +74,3 @@ extern "C"
 #endif
 
 #endif
-bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt);

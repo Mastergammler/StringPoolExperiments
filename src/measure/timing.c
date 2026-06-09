@@ -1,4 +1,5 @@
 #include "module.h"
+
 #include <bits/time.h>
 
 void timer_start(Timer* timer)

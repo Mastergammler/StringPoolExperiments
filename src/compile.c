@@ -1,4 +1,4 @@
 #include "string/compile.c"
-#include "timing/timing.c"
+#include "measure/timing.c"
 
 #include "main.c"

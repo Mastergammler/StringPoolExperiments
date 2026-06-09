@@ -1,4 +1,5 @@
-#pragma once
+#ifndef MGLIBC_TIMING
+#define MGLIBC_TIMING
 
 #include <time.h>
 
@@ -11,3 +12,5 @@ typedef struct
 void timer_start(Timer* timer);
 float timer_elapsed_ms(Timer* timer);
 float timer_ms_since_start(Timer* timer);
+
+#endif

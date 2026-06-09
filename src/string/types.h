@@ -51,6 +51,15 @@ typedef struct
     StringPool frame_buffer;
 } StringMemory;
 
+typedef struct
+{
+} StrSplitOpt;
+typedef struct
+{
+    str head;
+    str last;
+} StrSplitResult;
+
 typedef struct FmtHeader FmtHeader;
 typedef str (*Formatter)(StringPool* pool, FmtHeader*);
 

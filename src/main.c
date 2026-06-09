@@ -1,8 +1,8 @@
+#include "measure/module.h"
 #include "string/internal.h"
 #include "string/macros.h"
 #include "string/module.h"
 #include "string/types.h"
-#include "timing/module.h"
 
 #include <stdio.h>
 
@@ -196,6 +196,35 @@ void testing_floats()
     str_printc("I'm a freaking ninja now!");
     str_printc("That reall kind of works huh?");
 }
+// TODO: write general possibility to print a hres
+//  https://learn.microsoft.com/en-us/openspecs/windows_protocols/ms-erref/0642cb2f-2075-4469-918c-4441e69c548a
+void print_hres(int hres)
+{
+    int severityMask = 1 << 31;
+    int reservedMask = 1 << 30;
+    int customerMask = 1 << 29;
+    int ntStatusMask = 1 << 28;
+    int reservedX = 1 << 27;
+    // FIXME: for some reason not working
+    // short facilityMask = (~((unsigned short)0)) >> 5;
+    short facilityMask = 0b11111111111;
+    // short codeMask = ~(unsigned short)0;
+    // STFO: why 15???? why does the mask contain only 15 bits????
+    short codeMask = 0b111111111111111;
+
+    str_printc("Hres: %, FacilityMask %, codemask %", INT_BIN(hres),
+               INT_BIN(facilityMask), INT_BIN(codeMask));
+
+    int facility = hres >> 16 & facilityMask;
+    int code = hres & codeMask;
+    short code2 = hres;
+
+    printf("Facility: %x Code: %x Code2: %x\n", facility, code, code2);
+    str_printc("Failure %, Reserved %, Custom %, NtStatus %, ReservedX %",
+               BOO(hres & severityMask), BOO(hres & reservedMask),
+               BOO(hres & customerMask), BOO(hres & ntStatusMask),
+               BOO(hres & reservedX));
+}
 
 int main(int argc, char* argv[])
 {
@@ -212,6 +241,17 @@ int main(int argc, char* argv[])
                NUM(100));
 
     testing_floats();
+
+    str maStrings[3] = {str_static("hello"), str_static("world"),
+                        str_static("this is a bit longer")};
+    int count = sizeof(maStrings) / sizeof(str);
+
+    str joined =
+        str_joinc(maStrings, count, ">>Totally busted and stuff yeee<<");
+    str_printc("Joined: %", STR(joined));
+
+    int hres = -2146233087;
+    print_hres(hres);
 
     timer_elapsed_ms(&t);
     debug_print_pool(mem.persistent, 64);

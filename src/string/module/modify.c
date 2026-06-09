@@ -21,6 +21,44 @@ str str_sub(str parent, int from, int toExclusive)
                  .is_static = parent.is_static};
 }
 
+str string_join(StringPool* pool, str* strings, int count, str delim)
+{
+    int joinedLen = 0;
+    int lastEl = count - 1;
+    for (int i = 0; i < count; i++)
+    {
+        joinedLen += strings[i].len;
+        if (i != lastEl) joinedLen += delim.len;
+    }
+
+    char* strStart = pool_use(pool, memory_size(pool, joinedLen));
+    char* strPos = strStart;
+
+    for (int i = 0; i < count; i++)
+    {
+        str cur = strings[i];
+
+        memcpy(strPos, cur.chars, cur.len);
+        strPos += cur.len;
+        if (i != lastEl)
+        {
+            memcpy(strPos, delim.chars, delim.len);
+            strPos += delim.len;
+        }
+    }
+
+    joinedLen += finalize_str(pool, strStart, joinedLen);
+
+    str joined = {};
+    joined.len = joinedLen;
+    joined.chars = strStart;
+    joined.null_terminated = !pool->neglect_null_termination;
+    joined.is_slice = false;
+    joined.is_static = false;
+
+    return joined;
+}
+
 void string_append(StringPool* pool, str* src, str extension)
 {
     int combinedLen = src->len + extension.len;
@@ -62,4 +100,28 @@ str string_repeat(StringPool* pool, str src, int num)
     len += finalize_str(pool, mem, len);
 
     return (str){mem, len, !pool->neglect_null_termination};
+}
+
+StrSplitResult string_split_last(str src, char splitAt, StrSplitOpt opt)
+{
+    StrSplitResult res = {};
+    res.head = src;
+    res.head.null_terminated = false;
+    res.head.is_slice = true;
+    res.last.null_terminated = src.null_terminated;
+    res.last.is_slice = true;
+
+    for (int i = src.len - 1; i >= 0; i--)
+    {
+        if (src.chars[i] == splitAt)
+        {
+            res.head.len = i;
+            res.last.chars = src.chars + (i + 1);
+            res.last.len = src.len - (i + 1);
+
+            break;
+        }
+    }
+
+    return res;
 }

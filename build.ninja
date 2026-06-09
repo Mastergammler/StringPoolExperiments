@@ -12,7 +12,7 @@ ldflags = -lm
 outdir = .build
 
 build $outdir/string.o: cc src/string/compile.c
-build $outdir/timing.o: cc src/timing/timing.c
+build $outdir/measure.o: cc src/measure/timing.c
 build $outdir/main.o: cc src/main.c
 
-build $outdir/main: link $outdir/string.o $outdir/timing.o $outdir/main.o
+build $outdir/main: link $outdir/string.o $outdir/measure.o $outdir/main.o
