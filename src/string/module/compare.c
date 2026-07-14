@@ -1,38 +1,14 @@
 #include "../internal.h"
 
-bool str_equals_options(str a, str b, StrCompareOptions opt)
+bool cmp_from_ptr(const char* str1, const char* str2, uint32_t len,
+                  bool caseInsensitive)
 {
-    if (a.len != b.len) return false;
-    if (a.chars == b.chars) return true;
-
-    if (opt.case_insensitive)
+    for (int i = 0; i < len; i++)
     {
-        for (int i = 0; i < a.len; i++)
-        {
-            char lowerA = tolower(a.chars[i]);
-            char lowerB = tolower(b.chars[i]);
+        char a = *str1++;
+        char b = *str2++;
 
-            if (lowerA != lowerB) return false;
-        }
-
-        return true;
-    }
-    else
-    {
-        return strncmp(a.chars, b.chars, a.len) == 0;
-    }
-}
-
-bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt)
-{
-    if (ending.len > cmp.len) return false;
-
-    for (int i = 1; i <= ending.len; i++)
-    {
-        char a = cmp.chars[cmp.len - i];
-        char b = ending.chars[ending.len - i];
-
-        if (opt.case_insensitive)
+        if (caseInsensitive)
         {
             a = tolower(a);
             b = tolower(b);
@@ -42,4 +18,29 @@ bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt)
     }
 
     return true;
+}
+
+bool str_equals_options(str a, str b, StrCompareOptions opt)
+{
+    if (a.len != b.len) return false;
+    if (a.chars == b.chars) return true;
+
+    return cmp_from_ptr(a.chars, b.chars, a.len, opt.case_insensitive);
+}
+
+bool str_starts_with_options(str cmp, str start, StrCompareOptions opt)
+{
+    if (start.len > cmp.len) return false;
+
+    return cmp_from_ptr(cmp.chars, start.chars, start.len,
+                        opt.case_insensitive);
+}
+
+bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt)
+{
+    if (ending.len > cmp.len) return false;
+
+    // just start at the last ending.len chars
+    const char* cmpPos = cmp.chars + cmp.len - ending.len;
+    return cmp_from_ptr(cmpPos, ending.chars, ending.len, opt.case_insensitive);
 }

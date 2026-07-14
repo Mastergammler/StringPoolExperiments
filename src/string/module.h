@@ -62,6 +62,8 @@ extern "C"
     bool str_equals_opt(str a, str b, StrCompareOptions opt);
     bool str_ends_with(str a, str ending);
     bool str_ends_with_opt(str a, str ending, StrCompareOptions opt);
+    bool str_starts_with(str a, str start);
+    bool str_starts_with_opt(str a, str start, StrCompareOptions opt);
 
 #ifdef __cplusplus
 }

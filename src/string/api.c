@@ -170,3 +170,13 @@ bool str_ends_with_opt(str a, str ending, StrCompareOptions opt)
 {
     return str_ends_with_options(a, ending, opt);
 }
+
+bool str_starts_with(str a, str start)
+{
+    return str_starts_with_options(a, start, (StrCompareOptions){false});
+}
+
+bool str_starts_with_opt(str a, str start, StrCompareOptions opt)
+{
+    return str_starts_with_options(a, start, opt);
+}

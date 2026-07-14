@@ -74,6 +74,7 @@ struct FmtHeader
 typedef struct
 {
     bool case_insensitive;
+
 } StrCompareOptions;
 
 typedef struct
