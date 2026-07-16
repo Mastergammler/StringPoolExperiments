@@ -1,3 +1,4 @@
+#include "alloc/module.h"
 #include "measure/module.h"
 #include "string/internal.h"
 #include "string/macros.h"
@@ -57,7 +58,7 @@ void test_basic_formatting()
     str_print(str_fmt_bin(0b11001));
     str_print(printBin2);
     str_print(str_fmt_bin(-12));
-    str_print(str_fmt_ptr(&StrMemory->persistent));
+    str_print(str_fmt_ptr(&StrMem->pools[StrMem->default_pool]));
     str_print(str_fmt_b(12));
     str_print(str_fmt_b(false));
     str_print(str_fmt_i(12, 0));
@@ -226,13 +227,27 @@ void print_hres(int hres)
                BOO(hres & reservedX));
 }
 
-int main(int argc, char* argv[])
+typedef struct
 {
-    Timer t = {};
-    timer_start(&t);
-    StringMemory mem = {};
-    str_init(&mem, 1024 * 1, 256, 0, 256);
+    Timer timer;
+    Arena memory;
+    AllocContext mem;
+    StringMemory strings;
 
+} Program;
+
+typedef enum
+{
+    POOL_DEFAULT,
+    POOL_PRINT,
+    POOL_TRANSIENT,
+    POOL_count
+} StrPools;
+
+static Program Prog;
+
+void testing_strings_etc()
+{
     str_printc("% % % % % % %", NUM(1), NUM(12), NUM(237), NUM(5730),
                NUM(-7738), NUM(50027), NUM(0));
     str_printc("% % % % % %", NUM_PAD(5, 0), NUM_PAD(5, 1), NUM_PAD(5, 2),
@@ -253,13 +268,47 @@ int main(int argc, char* argv[])
     int hres = -2146233087;
     print_hres(hres);
 
-    timer_elapsed_ms(&t);
-    debug_print_pool(mem.persistent, 64);
-    debug_print_pool(mem.print_buffer, 64);
-    debug_print_pool(mem.transient, 64);
-    float printPoolTime = timer_elapsed_ms(&t);
-    float programTime = timer_ms_since_start(&t);
+    // timer_elapsed_ms(&t);
+    debug_print_pool(Prog.strings.pools[POOL_DEFAULT], 64);
+    debug_print_pool(Prog.strings.pools[POOL_PRINT], 64);
+    debug_print_pool(Prog.strings.pools[POOL_TRANSIENT], 64);
+}
 
+void init_program(uint64_t memory)
+{
+    MglibcAllocCtx = &Prog.mem;
+    Prog.mem.alloc = &Prog.memory;
+    Prog.mem.alloc_fn = mem_use_cb;
+    Prog.mem.revert_fn = mem_revert_cb;
+
+    timer_start(&Prog.timer);
+    arena_init(&Prog.memory, memory);
+
+    str_pool_prepare(Prog.mem, &Prog.strings, POOL_count);
+    define_pool(POOL_DEFAULT, 512, .is_default = true);
+    define_pool(POOL_PRINT, 256, .is_print = true);
+    define_pool(POOL_TRANSIENT, 128, .is_transient = true);
+    str_pool_finalize(Prog.mem);
+
+    str_printc("Program init: % ms", FLOAT(timer_elapsed_ms(&Prog.timer), 3));
+}
+
+int main(int argc, char* argv[])
+{
+    init_program(4096);
+
+    int* myInt = NULL;
+    arr_append(myInt, 2);
+    arr_append(myInt, 4);
+    arr_append(myInt, 7);
+
+    for (int i = 0; i < arr_len(myInt); i++)
+    {
+        str_printc("Array el: %", NUM(myInt[i]));
+    }
+
+    float printPoolTime = timer_elapsed_ms(&Prog.timer);
+    float programTime = timer_ms_since_start(&Prog.timer);
     str_printc("| % ms print pool | % ms program runtime |",
                FLOAT(printPoolTime, 3), FLOAT(programTime, 3));
 

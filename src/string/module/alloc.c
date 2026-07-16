@@ -30,23 +30,29 @@ void* pool_use(StringPool* pool, uint64_t size)
         pool->cursor_idx = 0;
     }
 
-    assert(pool->cursor_idx + size < pool->capacity);
+    ASSERT(pool->cursor_idx + size < pool->capacity,
+           "Pool %i has not enough space left (%ld/%ld taken %ld reuqested)",
+           pool->pool_idx, pool->cursor_idx, pool->capacity, size);
     void* useStart = pool->memory + pool->cursor_idx;
     pool->cursor_idx += size;
     return useStart;
 }
 
-void str_pool_reset(StringPool* pool)
+void str_pool_reset(StrPoolOptions opt)
 {
-    pool->cursor_idx = 0;
+    POOL(opt.pool_idx)->cursor_idx = 0;
 }
 
 /*
  * Resetting to last cursor index
  */
-void str_pool_reset_to(StringPool* pool, uint64_t pos)
+void str_pool_reset_to(StrPoolOptions opt, uint64_t pos)
 {
-    assert(pos <= pool->cursor_idx);
+    StringPool* pool = POOL(opt.pool_idx);
+    ASSERT(pos <= pool->cursor_idx,
+           "Cursor must be reset forward (overflow?) actual %ld, requested %ld",
+           pool->cursor_idx, pos);
+
     pool->cursor_idx = pos;
 }
 
@@ -55,6 +61,9 @@ void str_pool_reset_to(StringPool* pool, uint64_t pos)
  */
 void* pool_check_next(StringPool* pool, int maxSize)
 {
-    assert(pool->cursor_idx + maxSize < pool->capacity);
+    ASSERT(pool->cursor_idx + maxSize < pool->capacity,
+           "Pool %i has not enough space left (%ld/%ld taken %i reuqested)",
+           pool->pool_idx, pool->cursor_idx, pool->capacity, maxSize);
+
     return pool->memory + pool->cursor_idx;
 }

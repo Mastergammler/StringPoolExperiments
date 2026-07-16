@@ -1,12 +1,16 @@
 #ifndef MGLIBC_STRINGS
 #define MGLIBC_STRINGS
 
+#include "../alloc/module.h"
 #include "types.h"
 
 #ifndef FMT_PH
 #define FMT_PH '%'
 #define FMT_PH_LEN 1
 #endif
+
+#define define_pool(index, size, ...)                                          \
+    str_pool_define(index, size, (StrPoolInitOptions){__VA_ARGS__})
 
 // TASKLIST:
 //  - write expander to hanlde hresults (maybe wrap into struct)
@@ -18,11 +22,12 @@
 extern "C"
 {
 #endif
-    void str_init(StringMemory* allocation, uint64_t poolSize,
-                  uint64_t printBuffer, uint64_t frameBuffer,
-                  uint64_t expandBufferSize);
-    void str_pool_reset(StringPool* pool);
-    void str_pool_reset_to(StringPool* pool, uint64_t pos);
+    void str_pool_prepare(AllocContext ctx, StringMemory* memory,
+                          uint8_t poolCount);
+    void str_pool_finalize(AllocContext ctx);
+    void str_pool_define(uint8_t index, uint64_t size, StrPoolInitOptions opt);
+    void str_pool_reset(StrPoolOptions opt);
+    void str_pool_reset_to(StrPoolOptions opt, uint64_t pos);
 
     str str_alloc(const char* cstr);
     str str_alloc_opt(StrPoolOptions opt, const char* cstr);
@@ -69,4 +74,3 @@ extern "C"
 }
 #endif
 #endif // MGLIB_STRINGS
-StrSplitResult str_split_last(str src, char splitAt);

@@ -35,6 +35,7 @@ typedef struct
      * cursor = used size for non ring buffer
      */
     uint64_t cursor_idx;
+    uint8_t pool_idx;
     bool ring_buffer;
     /* do not add null terminator at the end */
     bool neglect_null_termination;
@@ -45,10 +46,26 @@ typedef struct
 
 typedef struct
 {
-    StringPool persistent;
-    StringPool transient;
-    StringPool print_buffer;
-    StringPool frame_buffer;
+    StringPool* pools;
+    uint8_t pool_count;
+
+    /*
+     * pool used by default for allocations etc
+     * when no StrPoolOptions are given
+     */
+    uint8_t default_pool;
+
+    /**
+     * pool used as the print buffer
+     * Usually a ring buffer without null termination
+     */
+    uint8_t print_pool;
+
+    /**
+     * Transient pool used for symbol expansion
+     * Can usually be quite small, but needed for expanding things
+     */
+    uint8_t transient_pool;
 } StringMemory;
 
 typedef struct
@@ -127,8 +144,18 @@ typedef struct
 
 typedef struct
 {
-    StringPool* pool;
+    uint8_t pool_idx;
     bool keep_transients;
 } StrPoolOptions;
+
+typedef struct
+{
+    bool is_default;
+    bool is_print;
+    bool is_transient;
+    /* omits setting defaults for some pools (print pool) */
+    bool no_defaults;
+
+} StrPoolInitOptions;
 
 #endif

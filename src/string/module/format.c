@@ -62,18 +62,21 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
     {
         if (formatter.chars[i] == FMT_PH)
         {
-            assert(argCount < FMT_ARG_BUF_MAX);
+            ASSERT(argCount < FMT_ARG_BUF_MAX,
+                   "Not supported: Exceeded max format arg count!");
 
             FmtHeader* h = va_arg(args, FmtHeader*);
             buffer[argCount].header = h;
             buffer[argCount].placholder_idx = i;
-            buffer[argCount].expanded = h->fmt_fn(&StrMemory->transient, h);
+            buffer[argCount].expanded =
+                h->fmt_fn(&StrMem->pools[StrMem->transient_pool], h);
             stringLen += buffer[argCount].expanded.len - FMT_PH_LEN;
             argCount++;
         }
     }
 
-    char* stringStart = pool_use(opt.pool, memory_size(opt.pool, stringLen));
+    char* stringStart = pool_use(POOL(opt.pool_idx),
+                                 memory_size(POOL(opt.pool_idx), stringLen));
     char* writePos = stringStart;
     int formatterPos = 0;
     for (int arg = 0; arg < argCount; arg++)
@@ -97,7 +100,7 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
         writePos += fmtSectionLen;
     }
 
-    stringLen += finalize_str(opt.pool, stringStart, stringLen);
+    stringLen += finalize_str(POOL(opt.pool_idx), stringStart, stringLen);
 
     release_arg_buf(bufferIdx);
     // NOTE: sometimes we need to keep the transient buffer
@@ -105,11 +108,12 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
     // so we can't clear it yet, else strings get overwritten
     if (!opt.keep_transients)
     {
-        str_pool_reset(&StrMemory->transient);
+        str_pool_reset((StrPoolOptions){StrMem->transient_pool});
     }
     va_end(args);
 
-    return (str){stringStart, stringLen, !opt.pool->neglect_null_termination};
+    return (str){stringStart, stringLen,
+                 !POOL(opt.pool_idx)->neglect_null_termination};
 }
 
 /*
@@ -137,7 +141,7 @@ str str_formatc(const char* formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StrPoolOptions opt = {&StrMemory->persistent};
+    StrPoolOptions opt = {StrMem->default_pool};
     return format_valist(opt, str_static(formatter), args);
 }
 
@@ -146,6 +150,6 @@ str str_format(str formatter, ...)
 {
     va_list args;
     va_start(args, formatter);
-    StrPoolOptions opt = {&StrMemory->persistent};
+    StrPoolOptions opt = {StrMem->default_pool};
     return format_valist(opt, formatter, args);
 }

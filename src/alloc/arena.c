@@ -6,15 +6,15 @@ void arena_init(Arena* arena, uint64_t capacity)
     arena->capaticy = capacity;
     arena->memory = malloc(capacity);
 
-    assert(arena->memory);
+    JUST_ASSERT(arena->memory);
 }
 
 void* arena_use(Arena* arena, uint64_t bytes)
 {
     uint64_t newCursor = arena->cursor + bytes;
-    assert(newCursor < arena->capaticy);
+    JUST_ASSERT(newCursor < arena->capaticy);
     // overflow
-    assert(newCursor >= arena->cursor);
+    JUST_ASSERT(newCursor >= arena->cursor);
 
     void* sectionStart = arena->memory + arena->cursor;
     arena->cursor = newCursor;
@@ -24,5 +24,11 @@ void* arena_use(Arena* arena, uint64_t bytes)
 
 void arena_reset(Arena* arena)
 {
+    arena->cursor = 0;
+}
+
+void arena_revert(Arena* arena, uint64_t size)
+{
+    if (arena->cursor >= size) arena->cursor -= size;
     arena->cursor = 0;
 }

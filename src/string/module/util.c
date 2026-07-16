@@ -13,13 +13,14 @@ int get_and_reserve_arg_buf()
 
     // no buffer available, running out of buffer space
     // -> to many recursive usages
-    assert(false);
+    ASSERT(false, "No buffer left available, too many nested calls!");
     return -1;
 }
 
 void release_arg_buf(int index)
 {
-    assert(index < FMT_ARG_BUF_COUNT);
+    ASSERT(index < FMT_ARG_BUF_COUNT, "Index out of range: %i/%i", index,
+           FMT_ARG_BUF_COUNT);
     FmtArgBuffers.in_use[index] = false;
 }
 
@@ -45,7 +46,9 @@ uint64_t memory_size(StringPool* pool, uint64_t charCount)
     int lfSpace = pool->add_linefeed ? 1 : 0;
 
     uint64_t memorySize = charCount + nullTermSpace + lfSpace;
-    assert(memorySize >= charCount);
+    ASSERT(memorySize >= charCount,
+           "Overflow detected! Char count %ld, memory size %ld", charCount,
+           memorySize);
 
     return memorySize;
 }

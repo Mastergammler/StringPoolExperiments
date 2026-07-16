@@ -1,6 +1,7 @@
 #ifndef STRING_INTERNAL
 #define STRING_INTERNAL
 
+#include "../alloc/module.h"
 #include "module.h"
 #include "types.h"
 
@@ -14,13 +15,24 @@
 #include <string.h>
 
 #define SENTINEL 0xf8
+#define POOL(index)                                                            \
+    ({                                                                         \
+        ASSERT(index < StrMem->pool_count, "Index out of range: %i/%i", index, \
+               StrMem->pool_count);                                            \
+        &StrMem->pools[index];                                                 \
+    })
+
+#define POOL_SIMPLE
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
-    static StringMemory* StrMemory;
+    // STFO: Keeep this or is this akward?
+    // -> I guess it's fine, it's just internal access
+    // => It's just the pointer there
+    static StringMemory* StrMem;
     static FmtArgBufferStore FmtArgBuffers;
 
     int clamp(int value, int min, int max);

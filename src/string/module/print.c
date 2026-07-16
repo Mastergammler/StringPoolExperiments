@@ -21,7 +21,7 @@ void print_ln(str tmpl, FILE* stream, va_list args)
     // For async handling, the buffer needs to be large enough,
     // that new strings don't override previous ones and lead to garbage
     // print output
-    StrPoolOptions opt = {&StrMemory->print_buffer};
+    StrPoolOptions opt = {StrMem->print_pool};
     str string = format_valist(opt, tmpl, args);
     if (string.len == 0)
     {
@@ -225,7 +225,8 @@ str format_pad_left(StringPool* pool, str original, char c, int n)
 
 str format_float(StringPool* pool, float f, int decimals)
 {
-    StrPoolOptions opt = {pool, true};
+    // TODO: unclean, passing pools & opts differently
+    StrPoolOptions opt = {pool->pool_idx, true};
 
     str sign = f < 0 ? str_static("-") : (str){};
     // this is the reason for an expander pool
@@ -268,7 +269,7 @@ str format_str(StringPool* pool, str string)
         previewDots = str_static("...");
     }
 
-    StrPoolOptions opt = {pool, true};
+    StrPoolOptions opt = {pool->pool_idx, true};
     str formatted = str_formatc_opt(
         opt, "str{ %: '%%', len: %, %, %, % }", PTR((void*)string.chars),
         STR(dataPreview), STR(previewDots), NUM(string.len),
