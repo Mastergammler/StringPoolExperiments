@@ -32,3 +32,19 @@ void arena_revert(Arena* arena, uint64_t size)
     if (arena->cursor >= size) arena->cursor -= size;
     arena->cursor = 0;
 }
+
+void* mglibc_mem_use_cb(void* alloc, uint64_t size)
+{
+    return arena_use((Arena*)alloc, size);
+}
+void mglibc_mem_revert_cb(void* alloc, uint64_t size)
+{
+    return arena_revert((Arena*)alloc, size);
+}
+
+AllocContext ctx_init_default(Arena* defaultAlloc)
+{
+    return (AllocContext){.alloc = (void*)defaultAlloc,
+                          .alloc_fn = mglibc_mem_use_cb,
+                          .revert_fn = mglibc_mem_revert_cb};
+}

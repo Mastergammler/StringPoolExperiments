@@ -231,7 +231,7 @@ typedef struct
 {
     Timer timer;
     Arena memory;
-    AllocContext mem;
+    AllocContext ctx;
     StringMemory strings;
 
 } Program;
@@ -276,21 +276,28 @@ void testing_strings_etc()
 
 void init_program(uint64_t memory)
 {
-    MglibcAllocCtx = &Prog.mem;
-    Prog.mem.alloc = &Prog.memory;
-    Prog.mem.alloc_fn = mem_use_cb;
-    Prog.mem.revert_fn = mem_revert_cb;
-
     timer_start(&Prog.timer);
+
+    // TODO: not sure if this is the best approach
+    MglibcAllocCtx = &Prog.ctx;
+    Prog.ctx = ctx_init_default(&Prog.memory);
     arena_init(&Prog.memory, memory);
 
-    str_pool_prepare(Prog.mem, &Prog.strings, POOL_count);
+    str_pool_prepare(Prog.ctx, &Prog.strings, POOL_count);
     define_pool(POOL_DEFAULT, 512, .is_default = true);
     define_pool(POOL_PRINT, 256, .is_print = true);
     define_pool(POOL_TRANSIENT, 128, .is_transient = true);
-    str_pool_finalize(Prog.mem);
+    str_pool_finalize(Prog.ctx);
 
     str_printc("Program init: % ms", FLOAT(timer_elapsed_ms(&Prog.timer), 3));
+}
+
+void print_ascii()
+{
+    str_printc("Space-ascii: %", NUM(' '));
+    str_printc("Tab-ascii: %", NUM('\t'));
+    str_printc("Newline-ascii: %", NUM('\n'));
+    str_printc("CR-ascii: %", NUM('\r'));
 }
 
 int main(int argc, char* argv[])
@@ -306,6 +313,11 @@ int main(int argc, char* argv[])
     {
         str_printc("Array el: %", NUM(myInt[i]));
     }
+
+    print_ascii();
+
+    str someString = str_static("  \t\nThis is my string  \t\r\r");
+    str_printc("'%'", STR(str_trim(someString)));
 
     float printPoolTime = timer_elapsed_ms(&Prog.timer);
     float programTime = timer_ms_since_start(&Prog.timer);

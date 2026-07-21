@@ -15,14 +15,18 @@
 #include <string.h>
 
 #define SENTINEL 0xf8
+#define ASCII_SPACE 32
+
+/*
+ * NOTE: INTERNAL ONLY -> Dependency on StrMem which is TU dependant
+ * -> Because macro code will printed on caller site
+ */
 #define POOL(index)                                                            \
     ({                                                                         \
         ASSERT(index < StrMem->pool_count, "Index out of range: %i/%i", index, \
                StrMem->pool_count);                                            \
         &StrMem->pools[index];                                                 \
     })
-
-#define POOL_SIMPLE
 
 #ifdef __cplusplus
 extern "C"
@@ -67,6 +71,7 @@ extern "C"
     str expand_float(StringPool* pool, FmtHeader* header);
     str expand_str(StringPool* pool, FmtHeader* header);
     str use_str(StringPool* pool, FmtHeader* header);
+    str use_char(StringPool* pool, FmtHeader* header);
 
     str expand_ptr(StringPool* pool, FmtHeader* header);
     str expand_bool(StringPool* pool, FmtHeader* header);
@@ -77,6 +82,8 @@ extern "C"
     void release_arg_buf(int index);
     bool str_equals_options(str a, str b, StrCompareOptions opt);
     bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt);
+    bool str_starts_with_options(str cmp, str start, StrCompareOptions opt);
+    str format_char(StringPool* pool, char ch);
 
     uint64_t memory_size(StringPool* pool, uint64_t charCount);
     int finalize_str(StringPool* pool, char* strStart, uint64_t charCount);
@@ -86,4 +93,3 @@ extern "C"
 #endif
 
 #endif
-bool str_starts_with_options(str cmp, str start, StrCompareOptions opt);

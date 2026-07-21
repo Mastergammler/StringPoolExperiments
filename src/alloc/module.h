@@ -19,13 +19,6 @@ void* arena_use(Arena* arena, uint64_t bytes);
 void arena_reset(Arena* arena);
 void arena_revert(Arena* arena, uint64_t size);
 
-static void* mem_use_cb(void* alloc, uint64_t size)
-{
-    return arena_use((Arena*)alloc, size);
-}
-static void mem_revert_cb(void* alloc, uint64_t size)
-{
-    return arena_revert((Arena*)alloc, size);
-}
+AllocContext ctx_init_default(Arena* defaultAlloc);
 
 #endif // MGLIBC_ALLOC_MODULE

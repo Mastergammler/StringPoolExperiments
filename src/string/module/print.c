@@ -152,6 +152,17 @@ static int num_len(int num)
     return len;
 }
 
+str format_char(StringPool* pool, char ch)
+{
+    int textLen = 1;
+    char* text = pool_use(pool, textLen);
+    text[0] = ch;
+
+    return (str){.chars = text,
+                 .len = textLen,
+                 .null_terminated = !pool->neglect_null_termination};
+}
+
 str format_int(StringPool* pool, int num, int places)
 {
     bool isNeg = num & INT_SIGN;

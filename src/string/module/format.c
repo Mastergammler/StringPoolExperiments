@@ -40,6 +40,14 @@ str use_str(StringPool* pool, FmtHeader* header)
     return format->value;
 }
 
+// STFO: this seems a bit too convoluted?
+//  -> is this the best way of doing it?
+str use_char(StringPool* pool, FmtHeader* header)
+{
+    CharFormat* format = (CharFormat*)header;
+    return format_char(pool, format->value);
+}
+
 str expand_ptr(StringPool* pool, FmtHeader* header)
 {
     PtrFormat* format = (PtrFormat*)header;

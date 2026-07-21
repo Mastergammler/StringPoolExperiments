@@ -130,6 +130,12 @@ typedef struct
 
 typedef struct
 {
+    FmtHeader header;
+    char value;
+} CharFormat;
+
+typedef struct
+{
     FmtHeader* header;
     int placholder_idx;
     str expanded;

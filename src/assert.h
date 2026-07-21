@@ -8,7 +8,7 @@
     {                                                                          \
         if (!(expr))                                                           \
         {                                                                      \
-            fprintf(stdout,                                                    \
+            fprintf(stderr,                                                    \
                     "Assertion failed: %s\n"                                   \
                     "  File: %s\n"                                             \
                     "  Line: %d\n"                                             \
@@ -23,7 +23,7 @@
     {                                                                          \
         if (!(expr))                                                           \
         {                                                                      \
-            fprintf(stdout,                                                    \
+            fprintf(stderr,                                                    \
                     "Assertion failed: %s\n"                                   \
                     "  File: %s\n"                                             \
                     "  Line: %d\n"                                             \

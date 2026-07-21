@@ -1,6 +1,8 @@
 #include "../assert.h"
 #include "alloc.h"
 
+#ifndef MGLIBC_NO_ARRAY_IMPL
+
 typedef struct
 {
     unsigned char magic[4];
@@ -63,3 +65,5 @@ static const unsigned char ARR_MAGIC[4] = {0xAA, 0x22, 0xAA, 0x11};
     })
 
 #define arr_len(arr) ((arr) ? ((ArrHead*)(arr) - 1)->count : 0)
+
+#endif

@@ -46,6 +46,7 @@ void str_pool_define(uint8_t index, uint64_t size, StrPoolInitOptions opt)
         StrMem->transient_pool = index;
     }
 
+    StrMem->pools[index] = (StringPool){};
     StringPool* pool = &StrMem->pools[index];
     pool->capacity = size;
     pool->pool_idx = index;
@@ -72,7 +73,7 @@ void str_pool_finalize(AllocContext ctx)
     {
         StringPool* pool = &StrMem->pools[i];
         pool->memory = ctx.alloc_fn(ctx.alloc, pool->capacity);
-        ASSERT(pool->memory, "Allocation failed for pool at idx: %i, size %ld",
+        ASSERT(pool->memory, "Allocation failed for pool at idx: %i, size %lu",
                i, pool->capacity);
     }
 }

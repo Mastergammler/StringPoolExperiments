@@ -16,7 +16,37 @@ str str_sub(str parent, int from, int toExclusive)
     return (str){.chars = parent.chars + fromClamped,
                  .len = newLen,
                  .null_terminated =
-                     toExclusive == true && parent.null_terminated,
+                     toExclusive == parent.len && parent.null_terminated,
+                 .is_slice = true,
+                 .is_static = parent.is_static};
+}
+
+/**
+ * Trims all invalid ascii characters, up to (and including) space
+ */
+str str_trim(str parent)
+{
+    int minIdx = 0;
+    int maxIdxEx = parent.len;
+
+    // trim left
+    for (int i = 0; i < parent.len; i++)
+    {
+        if (parent.chars[i] > ASCII_SPACE) break;
+        minIdx++;
+    }
+
+    // trim right
+    for (int i = parent.len - 1; i >= 0; i--)
+    {
+        if (parent.chars[i] > ASCII_SPACE) break;
+        maxIdxEx--;
+    }
+
+    return (str){.chars = parent.chars + minIdx,
+                 .len = maxIdxEx - minIdx,
+                 .null_terminated =
+                     maxIdxEx == parent.len && parent.null_terminated,
                  .is_slice = true,
                  .is_static = parent.is_static};
 }

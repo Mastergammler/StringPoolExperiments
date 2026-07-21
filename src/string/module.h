@@ -34,6 +34,7 @@ extern "C"
     str str_allocn(const char* cstr, int len);
     str str_allocn_opt(StrPoolOptions opt, const char* cstr, int len);
     str str_sub(str parent, int from, int toExclusive);
+    str str_trim(str parent);
     StrSplitResult str_split_last(str src, char splitAt);
     str str_static(const char* cstr);
     str str_concat(str a, str b);

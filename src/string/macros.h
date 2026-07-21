@@ -50,6 +50,11 @@
     {                                                                          \
         use_str, val                                                           \
     }
+#define CH(val)                                                                \
+    &(CharFormat)                                                              \
+    {                                                                          \
+        use_char, val                                                          \
+    }
 
 #define LIT(val)                                                               \
     &(StrFormat)                                                               \
