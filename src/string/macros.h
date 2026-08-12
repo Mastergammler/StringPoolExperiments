@@ -3,61 +3,64 @@
 // NOTE: were creating compound literals as lvalues here
 // -> so these remain valid for the function call duration
 
+#define STR_HEADER(fn) fn, NULL
+#define PRINT_HEADER(fn) NULL, fn
+
 #define FLOAT(f, dec)                                                          \
     &(FloatFormat)                                                             \
     {                                                                          \
-        expand_float, f, dec                                                   \
+        STR_HEADER(expand_float), f, dec                                       \
     }
 
 #define PTR(val)                                                               \
     &(PtrFormat)                                                               \
     {                                                                          \
-        expand_ptr, val                                                        \
+        STR_HEADER(expand_ptr), val                                            \
     }
 
 #define BOO(val)                                                               \
     &(BoolFormat)                                                              \
     {                                                                          \
-        expand_bool, val                                                       \
+        PRINT_HEADER(bool_formatter), val                                      \
     }
 
-#define NUM(val)                                                               \
-    &(IntFormat)                                                               \
+#define NUM(val, ...)                                                          \
+    &(NumFormat)                                                               \
     {                                                                          \
-        expand_int, val, 0, false                                              \
+        PRINT_HEADER(num_formatter), val, 0, false, ##__VA_ARGS__              \
     }
 
 #define NUM_PAD(val, pad)                                                      \
     &(IntFormat)                                                               \
     {                                                                          \
-        expand_int, val, pad, false                                            \
+        STR_HEADER(expand_int), val, pad, false                                \
     }
 
 #define INT_BIN(val)                                                           \
     &(IntFormat)                                                               \
     {                                                                          \
-        expand_int, val, 0, true                                               \
+        STR_HEADER(expand_int), val, 0, true                                   \
     }
 
 #define STR_OBJ(val)                                                           \
     &(StrFormat)                                                               \
     {                                                                          \
-        expand_str, val                                                        \
+        STR_HEADER(expand_str), val                                            \
     }
 
 #define STR(val)                                                               \
     &(StrFormat)                                                               \
     {                                                                          \
-        use_str, val                                                           \
+        STR_HEADER(use_str), val                                               \
     }
 #define CH(val)                                                                \
     &(CharFormat)                                                              \
     {                                                                          \
-        use_char, val                                                          \
+        STR_HEADER(use_char), val                                              \
     }
 
 #define LIT(val)                                                               \
     &(StrFormat)                                                               \
     {                                                                          \
-        use_str, str_static(val)                                               \
+        STR_HEADER(use_str), str_static(val)                                   \
     }

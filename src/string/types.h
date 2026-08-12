@@ -15,6 +15,7 @@ typedef struct
 
     /* if the null terminator is present in the storage location */
     bool null_terminated;
+
     /*
      * child of another string (substring)
      * so lifetime can not be guaranteed
@@ -78,15 +79,60 @@ typedef struct
 } StrSplitResult;
 
 typedef struct FmtHeader FmtHeader;
+typedef struct PrintHeader PrintHeader;
 typedef str (*Formatter)(StringPool* pool, FmtHeader*);
+typedef PrintHeader* (*PrintInfo)(FmtHeader*);
+typedef str (*Printer)(char* writeCursor, PrintHeader*);
 
 // STFO: this wouldn't allow me to create custom formatters
 // that i can just put into the function ...
 // -> unless i put in a function pointer to the expander function?
+// TODO: legacy: I currently support 2 types, because else i need to
+// migrate all of them at the same time
+// But untimately every type should use the print-info expander
 struct FmtHeader
 {
     Formatter fmt_fn;
+    /* is null if not used */
+    PrintInfo info_fn;
 };
+
+struct PrintHeader
+{
+    Printer print_fn;
+    uint8_t str_len;
+};
+
+typedef struct
+{
+    PrintHeader header;
+
+    /* hi-lo encoded decimal numbers, starting from big to small
+     * (biggest decimal / leader at index 0)
+     */
+    uint8_t digits[10];
+    uint8_t digit_count;
+
+    uint8_t pad_left_count;
+    uint8_t pad_right_count;
+    char pad_char;
+    bool negative;
+
+} NumDesc;
+
+typedef struct
+{
+    PrintHeader header;
+    /* static string of the name to print */
+    str static_name;
+} BoolDesc;
+
+typedef struct
+{
+    FmtHeader header;
+    bool value;
+    BoolDesc desc;
+} BoolFormat;
 
 typedef struct
 {
@@ -113,14 +159,17 @@ typedef struct
 typedef struct
 {
     FmtHeader header;
-    void* value;
-} PtrFormat;
+    int64_t value;
+    int places;
+    bool binary;
+    NumDesc desc;
+} NumFormat;
 
 typedef struct
 {
     FmtHeader header;
-    bool value;
-} BoolFormat;
+    void* value;
+} PtrFormat;
 
 typedef struct
 {
@@ -137,6 +186,7 @@ typedef struct
 typedef struct
 {
     FmtHeader* header;
+    PrintHeader* print_header;
     int placholder_idx;
     str expanded;
 } FmtArg;

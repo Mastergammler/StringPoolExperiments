@@ -17,6 +17,10 @@
 #define SENTINEL 0xf8
 #define ASCII_SPACE 32
 
+static const char TRUE_STR[] = "true";
+static const char FALSE_STR[] = "false";
+static const char HEX_DIGITS[] = "0123456789abcdef";
+
 /*
  * NOTE: INTERNAL ONLY -> Dependency on StrMem which is TU dependant
  * -> Because macro code will printed on caller site
@@ -36,7 +40,7 @@ extern "C"
     // STFO: Keeep this or is this akward?
     // -> I guess it's fine, it's just internal access
     // => It's just the pointer there
-    static StringMemory* StrMem;
+    extern StringMemory* StrMem;
     static FmtArgBufferStore FmtArgBuffers;
 
     int clamp(int value, int min, int max);
@@ -88,8 +92,16 @@ extern "C"
     uint64_t memory_size(StringPool* pool, uint64_t charCount);
     int finalize_str(StringPool* pool, char* strStart, uint64_t charCount);
 
+    NumDesc extract_signed(int64_t num, int minDigits);
+    PrintHeader* num_formatter(FmtHeader* header);
+    // str print_signed(StringPool* pool, PrintHeader* numData);
+    str print_signed(char* writeCursor, PrintHeader* header);
+
 #ifdef __cplusplus
 }
 #endif
 
 #endif
+BoolDesc extract_bool(bool val);
+str print_static(char* writeCursor, PrintHeader* header);
+PrintHeader * bool_formatter(FmtHeader* header);

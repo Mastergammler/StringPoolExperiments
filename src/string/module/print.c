@@ -1,10 +1,6 @@
 #include "../internal.h"
 #include "../macros.h"
 
-static const char TRUE_STR[] = "true";
-static const char FALSE_STR[] = "false";
-static const char HEX_DIGITS[] = "0123456789abcdef";
-
 #define INT_SIGN (1U << 31)
 #define ASCII_NUM_OFFSET 48
 
@@ -13,7 +9,7 @@ static const char HEX_DIGITS[] = "0123456789abcdef";
 #define STR_PREVIEW_LEN 13
 
 // STFO: needs explicit fflush(stdout) ?
-// - handle fully buffered / piped mode
+// - handle fulljy buffered / piped mode
 void print_ln(str tmpl, FILE* stream, va_list args)
 {
     // writing into the print buffer, which will be reused
@@ -36,6 +32,68 @@ void print_ln(str tmpl, FILE* stream, va_list args)
 void print_str(const char* cstr, FILE* stream, va_list args)
 {
     print_ln(str_static(cstr), stream, args);
+}
+
+// STFO: does it make sense, that it returns a string?
+//  -> Not really right?
+//  => Because it is already printed
+str print_static(char* writeCursor, PrintHeader* header)
+{
+    // TODO: i don't even need the header length here?
+    BoolDesc* desc = (BoolDesc*)header;
+    memcpy(writeCursor, desc->static_name.chars, desc->static_name.len);
+    return (str){.chars = writeCursor,
+                 .len = desc->static_name.len,
+                 .null_terminated = false};
+}
+
+// NOTE: we're creating kind a  sub-string here
+// that is why we are not writing directly into a pool
+// -> But just using the currently available cursor
+//
+// STFO: not sure if this is good design
+// Because we need to know the length beforehand now
+// Can i not just let it print directly into the pool?
+// Shouldn't this be possible? Then i also don't need to do
+// the whole cursor acrobatics there
+str print_signed(char* writeCursor, PrintHeader* header)
+{
+    NumDesc* fmt = (NumDesc*)header;
+
+    char* cur = writeCursor;
+
+    if (fmt->negative)
+    {
+        *cur++ = '-';
+    }
+
+    for (int i = 0; i < fmt->pad_left_count; i++)
+    {
+        *cur++ = fmt->pad_char;
+    }
+
+    //  saved with the highest number value at the lowest index
+    for (int i = 0; i < fmt->digit_count; i++)
+    {
+        int digit = i;
+        int arrIdx = digit / 2;
+        int shift = digit % 2;
+
+        int leader = fmt->digits[arrIdx] >> (shift * 4) & 0b1111;
+        // printf("[out] Leader %i, index %i, shift %i\n", leader, arrIdx,
+        // shift);
+        *cur++ = leader + ASCII_NUM_OFFSET;
+    }
+
+    for (int i = 0; i < fmt->pad_right_count; i++)
+    {
+        *cur++ = fmt->pad_char;
+    }
+
+    int textLen = fmt->header.str_len;
+
+    return (str){
+        .chars = writeCursor, .len = textLen, .null_terminated = false};
 }
 
 str format_ptr(StringPool* pool, void* ptr)
@@ -155,8 +213,9 @@ static int num_len(int num)
 str format_char(StringPool* pool, char ch)
 {
     int textLen = 1;
-    char* text = pool_use(pool, textLen);
+    char* text = pool_use(pool, memory_size(pool, textLen));
     text[0] = ch;
+    textLen += finalize_str(pool, text, textLen);
 
     return (str){.chars = text,
                  .len = textLen,

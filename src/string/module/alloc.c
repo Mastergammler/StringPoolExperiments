@@ -31,7 +31,7 @@ void* pool_use(StringPool* pool, uint64_t size)
     }
 
     ASSERT(pool->cursor_idx + size < pool->capacity,
-           "Pool %i has not enough space left (%lu/%lu taken %lu reuqested)",
+           "Pool %i has not enough space left (%lu/%lu taken %lu requested)",
            pool->pool_idx, pool->cursor_idx, pool->capacity, size);
     void* useStart = pool->memory + pool->cursor_idx;
     pool->cursor_idx += size;

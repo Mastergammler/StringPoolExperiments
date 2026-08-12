@@ -124,13 +124,13 @@ void test2()
     str_printc("'%' - %", STR(a), STR_OBJ(a));
 }
 
-IntFormat* pInMethod()
+NumFormat* pInMethod()
 {
-    IntFormat* fmt = NUM(5);
+    NumFormat* fmt = NUM(5);
     int dumme = 123455;
-    IntFormat actualObj = *fmt;
-    printf("%p %i\n", fmt, fmt->value);
-    printf("Actual: %p %i\n", &actualObj, actualObj.value);
+    NumFormat actualObj = *fmt;
+    printf("%p %ld\n", fmt, fmt->value);
+    printf("Actual: %p %ld\n", &actualObj, actualObj.value);
     return fmt;
 }
 
@@ -139,11 +139,11 @@ void test_compares()
     Timer t = {};
     timer_start(&t);
 
-    IntFormat* fmt = pInMethod();
-    IntFormat actualOutside = *fmt;
-    printf("ActualOutside: %p %i\n", &actualOutside, actualOutside.value);
+    NumFormat* fmt = pInMethod();
+    NumFormat actualOutside = *fmt;
+    printf("ActualOutside: %p %ld\n", &actualOutside, actualOutside.value);
     fmt->value = 7;
-    printf("Outside: %p %i\n", fmt, fmt->value);
+    printf("Outside: %p %ld\n", fmt, fmt->value);
 
     str formatted =
         str_formatc("% - % - % - % - %", FLOAT(1.005, 5), FLOAT(1.005, 4),
@@ -274,6 +274,8 @@ void testing_strings_etc()
     debug_print_pool(Prog.strings.pools[POOL_TRANSIENT], 64);
 }
 
+StringMemory* StrMem;
+
 void init_program(uint64_t memory)
 {
     timer_start(&Prog.timer);
@@ -300,10 +302,8 @@ void print_ascii()
     str_printc("CR-ascii: %", NUM('\r'));
 }
 
-int main(int argc, char* argv[])
+void array_test()
 {
-    init_program(4096);
-
     int* myInt = NULL;
     arr_append(myInt, 2);
     arr_append(myInt, 4);
@@ -318,11 +318,66 @@ int main(int argc, char* argv[])
 
     str someString = str_static("  \t\nThis is my string  \t\r\r");
     str_printc("'%'", STR(str_trim(someString)));
+}
+
+void xor_tests()
+{
+    int cmp10 = 10;
+    int cmp100 = 100;
+
+    for (int i = 0; i < 32; i++)
+    {
+        int res = i;
+        int stripped = i; // & 0b1111;
+
+        int loops = 0;
+
+        while (res >= cmp10 && loops < 5)
+        {
+            res = cmp10 ^ stripped;
+            str_printc("[%] Stripped res: %", NUM(loops), INT_BIN(res));
+            loops++;
+        }
+
+        str_printc("10: (%) % ^ % -> %", NUM(i), INT_BIN(stripped),
+                   INT_BIN(cmp10), NUM(res));
+        // str_printc("100: (%) % ^ % -> %", NUM(i), INT_BIN(i),
+        // INT_BIN(cmp100), NUM(xor100));
+    }
+}
+
+int main(int argc, char* argv[])
+{
+    init_program(4096);
+
+    Timer timer = {};
+
+    StringPool* transient = &StrMem->pools[StrMem->default_pool];
+    int64_t num = -1527713833408340293;
+    timer_start(&timer);
+
+    str_printc("Num: '%'", NUM(num));
+    float printDirect = timer_elapsed_ms(&timer);
+    NumDesc p = extract_signed(num, 0);
+    str expanded = print_signed(transient->memory, &p.header);
+    str_printc("Num: '%'", STR(expanded));
+    float printNew = timer_elapsed_ms(&timer);
+    str numStr = str_formatc("%", NUM(num));
+    str_printc("Num: '%'", STR(numStr));
+    float printOld = timer_elapsed_ms(&timer);
+    printf("Num: '%ld'\n", (long)num);
+    float printf = timer_elapsed_ms(&timer);
+    str_printc("% - %", BOO(true), BOO(false));
+    float printStatic = timer_elapsed_ms(&timer);
+    // str_printc("%", NUM(num, .binary = true));
 
     float printPoolTime = timer_elapsed_ms(&Prog.timer);
     float programTime = timer_ms_since_start(&Prog.timer);
-    str_printc("| % ms print pool | % ms program runtime |",
-               FLOAT(printPoolTime, 3), FLOAT(programTime, 3));
+    str_printc("| % ms print pool | % ms program runtime \n| % old | % new | % "
+               "printDirect | % printf | % static |",
+               FLOAT(printPoolTime, 3), FLOAT(programTime, 3),
+               FLOAT(printOld, 5), FLOAT(printNew, 5), FLOAT(printDirect, 5),
+               FLOAT(printf, 5), FLOAT(printStatic, 5));
 
     return 0;
 }

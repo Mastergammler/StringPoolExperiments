@@ -5,6 +5,7 @@
 #include "module/init.c"
 #include "module/modify.c"
 #include "module/print.c"
+#include "module/sheet.c"
 #include "module/util.c"
 
 #include "api.c"
