@@ -40,10 +40,18 @@ int clamp(int value, int min, int max)
     return clamp_max(minned, max);
 }
 
-uint64_t memory_size(StringPool* pool, uint64_t charCount)
+uint64_t memory_size(StrPoolOptions opt, uint64_t charCount)
 {
-    int nullTermSpace = pool->neglect_null_termination ? 0 : 1;
-    int lfSpace = pool->add_linefeed ? 1 : 0;
+    StringPool* pool = POOL(opt.pool_idx);
+
+    int nullTermSpace = 0;
+    int lfSpace = 0;
+
+    if (!opt.substring_mode)
+    {
+        nullTermSpace = pool->neglect_null_termination ? 0 : 1;
+        lfSpace = pool->add_linefeed ? 1 : 0;
+    }
 
     uint64_t memorySize = charCount + nullTermSpace + lfSpace;
     ASSERT(memorySize >= charCount,
@@ -57,11 +65,12 @@ uint64_t memory_size(StringPool* pool, uint64_t charCount)
  * We assume that enough buffer has been allocated,
  * with the method memory_size
  */
-int finalize_str(StringPool* pool, char* strStart, uint64_t charCount)
+int finalize_str(StrPoolOptions opt, char* strStart, uint64_t charCount)
 {
+    StringPool* pool = POOL(opt.pool_idx);
     int addStrLen = 0;
 
-    if (pool->add_linefeed)
+    if (pool->add_linefeed && !opt.substring_mode)
     {
         addStrLen++;
         // TODO: we donn't care about CR for now
@@ -69,7 +78,7 @@ int finalize_str(StringPool* pool, char* strStart, uint64_t charCount)
     }
 
     // null terminator doesn't count for string length
-    if (!pool->neglect_null_termination)
+    if (!pool->neglect_null_termination && !opt.substring_mode)
     {
         strStart[charCount] = 0;
     }

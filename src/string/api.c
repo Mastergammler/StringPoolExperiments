@@ -18,49 +18,50 @@ void str_printc(const char* cstr, ...)
 
 str str_alloc(const char* cstr)
 {
-    return string_alloc(POOL(StrMem->default_pool), cstr, strlen(cstr));
+    return string_alloc((StrPoolOptions){StrMem->default_pool}, cstr,
+                        strlen(cstr));
 }
 
 str str_allocn(const char* cstr, int len)
 {
-    return string_alloc(POOL(StrMem->default_pool), cstr, len);
+    return string_alloc((StrPoolOptions){StrMem->default_pool}, cstr, len);
 }
 
 str str_alloc_opt(StrPoolOptions opt, const char* cstr)
 {
-    return string_alloc(POOL(opt.pool_idx), cstr, strlen(cstr));
+    return string_alloc(opt, cstr, strlen(cstr));
 }
 
 str str_allocn_opt(StrPoolOptions opt, const char* cstr, int len)
 {
-    return string_alloc(POOL(opt.pool_idx), cstr, len);
+    return string_alloc(opt, cstr, len);
 }
 
 void str_append(str* src, str extension)
 {
-    string_append(&StrMem->pools[StrMem->default_pool], src, extension);
+    string_append((StrPoolOptions){StrMem->default_pool}, src, extension);
 }
 
 void str_append_opt(StrPoolOptions opt, str* src, str extension)
 {
-    string_append(POOL(opt.pool_idx), src, extension);
+    string_append(opt, src, extension);
 }
 
 str str_concat(str a, str b)
 {
-    string_append(POOL(StrMem->default_pool), &a, b);
+    string_append((StrPoolOptions){StrMem->default_pool}, &a, b);
     return a;
 }
 
 str str_concat_opt(StrPoolOptions opt, str a, str b)
 {
-    string_append(POOL(opt.pool_idx), &a, b);
+    string_append(opt, &a, b);
     return a;
 }
 
 str str_concatc(str a, const char* cstr)
 {
-    string_append(&StrMem->pools[StrMem->default_pool], &a, str_static(cstr));
+    string_append((StrPoolOptions){StrMem->default_pool}, &a, str_static(cstr));
     return a;
 }
 
@@ -71,28 +72,28 @@ StrSplitResult str_split_last(str src, char splitAt)
 
 str str_join(str* strings, int count, str delim)
 {
-    return string_join(&StrMem->pools[StrMem->default_pool], strings, count,
+    return string_join((StrPoolOptions){StrMem->default_pool}, strings, count,
                        delim);
 }
 str str_join_opt(StrPoolOptions opt, str* strings, int count, str delim)
 {
-    return string_join(POOL(opt.pool_idx), strings, count, delim);
+    return string_join(opt, strings, count, delim);
 }
 str str_joinc(str* strings, int count, const char* delim)
 {
-    return string_join(&StrMem->pools[StrMem->default_pool], strings, count,
+    return string_join((StrPoolOptions){StrMem->default_pool}, strings, count,
                        str_static(delim));
 }
 
 str str_joinc_opt(StrPoolOptions opt, str* strings, int count,
                   const char* delim)
 {
-    return string_join(POOL(opt.pool_idx), strings, count, str_static(delim));
+    return string_join(opt, strings, count, str_static(delim));
 }
 
 void str_appendc(str* src, const char* extension)
 {
-    string_append(&StrMem->pools[StrMem->default_pool], src,
+    string_append((StrPoolOptions){StrMem->default_pool}, src,
                   str_static(extension));
 }
 
@@ -121,15 +122,17 @@ str str_static(const char* cstr)
 //  => Writing in to persisten memory is not that usefull here!
 str str_fmt_bin(int num)
 {
-    return format_binary(&StrMem->pools[StrMem->default_pool], num);
+    IntFormat fmt = {.value = num, .binary = true};
+    return write_binary((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 str str_fmt_ptr(void* ptr)
 {
-    return format_ptr(&StrMem->pools[StrMem->default_pool], ptr);
+    return write_ptr((StrPoolOptions){StrMem->default_pool}, ptr);
 }
 str str_fmt_b(bool boolean)
 {
-    return format_bool(&StrMem->pools[StrMem->default_pool], boolean);
+    BoolFormat fmt = {.value = boolean};
+    return write_bool((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 
 /*
@@ -138,20 +141,23 @@ str str_fmt_b(bool boolean)
  */
 str str_fmt_i(int num, int places)
 {
-    return format_int(&StrMem->pools[StrMem->default_pool], num, places);
+    IntFormat fmt = {.value = num, .places = places};
+    return write_int((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 str str_pad_left(str original, char c, int n)
 {
-    return format_pad_left(&StrMem->pools[StrMem->default_pool], original, c,
-                           n);
+    StrFormat fmt = {.value = original, .pad_left_count = n, .pad_char = c};
+    return write_pad_left((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 str str_fmt_f(float f, int decimals)
 {
-    return format_float(&StrMem->pools[StrMem->default_pool], f, decimals);
+    FloatFormat fmt = {.value = f, .decimals = decimals};
+    return write_float((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 str str_fmt_str(str string)
 {
-    return format_str(&StrMem->pools[StrMem->default_pool], string);
+    StrFormat fmt = {.value = string};
+    return write_str((StrPoolOptions){StrMem->default_pool}, &fmt.header);
 }
 
 bool str_equals(str a, str b)

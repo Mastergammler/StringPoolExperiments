@@ -51,7 +51,7 @@ str str_trim(str parent)
                  .is_static = parent.is_static};
 }
 
-str string_join(StringPool* pool, str* strings, int count, str delim)
+str string_join(StrPoolOptions opt, str* strings, int count, str delim)
 {
     int joinedLen = 0;
     int lastEl = count - 1;
@@ -61,7 +61,7 @@ str string_join(StringPool* pool, str* strings, int count, str delim)
         if (i != lastEl) joinedLen += delim.len;
     }
 
-    char* strStart = pool_use(pool, memory_size(pool, joinedLen));
+    char* strStart = pool_use(opt, memory_size(opt, joinedLen));
     char* strPos = strStart;
 
     for (int i = 0; i < count; i++)
@@ -77,31 +77,31 @@ str string_join(StringPool* pool, str* strings, int count, str delim)
         }
     }
 
-    joinedLen += finalize_str(pool, strStart, joinedLen);
+    joinedLen += finalize_str(opt, strStart, joinedLen);
 
     str joined = {};
     joined.len = joinedLen;
     joined.chars = strStart;
-    joined.null_terminated = !pool->neglect_null_termination;
+    joined.null_terminated = !POOL(opt.pool_idx)->neglect_null_termination;
     joined.is_slice = false;
     joined.is_static = false;
 
     return joined;
 }
 
-void string_append(StringPool* pool, str* src, str extension)
+void string_append(StrPoolOptions opt, str* src, str extension)
 {
     int combinedLen = src->len + extension.len;
-    char* strStart = pool_use(pool, memory_size(pool, combinedLen));
+    char* strStart = pool_use(opt, memory_size(opt, combinedLen));
 
     memcpy(strStart, src->chars, src->len);
     memcpy(strStart + src->len, extension.chars, extension.len);
 
-    combinedLen += finalize_str(pool, strStart, combinedLen);
+    combinedLen += finalize_str(opt, strStart, combinedLen);
 
     src->len = combinedLen;
     src->chars = strStart;
-    src->null_terminated = !pool->neglect_null_termination;
+    src->null_terminated = !POOL(opt.pool_idx)->neglect_null_termination;
     src->is_slice = false;
     src->is_static = false;
 
@@ -111,12 +111,12 @@ void string_append(StringPool* pool, str* src, str extension)
     //  add print slot to debug print
 }
 
-str string_repeat(StringPool* pool, str src, int num)
+str string_repeat(StrPoolOptions opt, str src, int num)
 {
     int len = src.len * num;
     if (len <= 0) return (str){0};
 
-    char* mem = pool_use(pool, memory_size(pool, len));
+    char* mem = pool_use(opt, memory_size(opt, len));
     char* writePos = mem;
 
     for (int i = 0; i < num; i++)
@@ -127,9 +127,9 @@ str string_repeat(StringPool* pool, str src, int num)
         }
     }
 
-    len += finalize_str(pool, mem, len);
+    len += finalize_str(opt, mem, len);
 
-    return (str){mem, len, !pool->neglect_null_termination};
+    return (str){mem, len, !POOL(opt.pool_idx)->neglect_null_termination};
 }
 
 StrSplitResult string_split_last(str src, char splitAt, StrSplitOpt opt)

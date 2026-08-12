@@ -3,64 +3,60 @@
 // NOTE: were creating compound literals as lvalues here
 // -> so these remain valid for the function call duration
 
-#define STR_HEADER(fn) fn, NULL
-#define PRINT_HEADER(fn) NULL, fn
-
-#define FLOAT(f, dec)                                                          \
-    &(FloatFormat)                                                             \
-    {                                                                          \
-        STR_HEADER(expand_float), f, dec                                       \
-    }
-
-#define PTR(val)                                                               \
-    &(PtrFormat)                                                               \
-    {                                                                          \
-        STR_HEADER(expand_ptr), val                                            \
-    }
-
-#define BOO(val)                                                               \
-    &(BoolFormat)                                                              \
-    {                                                                          \
-        PRINT_HEADER(bool_formatter), val                                      \
-    }
-
-#define NUM(val, ...)                                                          \
+#define fmt_n(val, ...)                                                        \
     &(NumFormat)                                                               \
     {                                                                          \
-        PRINT_HEADER(num_formatter), val, 0, false, ##__VA_ARGS__              \
+        (FmtHeader){write_int_strategy}, val, ##__VA_ARGS__                    \
     }
 
-#define NUM_PAD(val, pad)                                                      \
-    &(IntFormat)                                                               \
+#define fmt_u(val, ...)                                                        \
+    &(NumFormat)                                                               \
     {                                                                          \
-        STR_HEADER(expand_int), val, pad, false                                \
+        (FmtHeader){write_int_strategy}, val, pxU, ##__VA_ARGS__               \
     }
 
-#define INT_BIN(val)                                                           \
-    &(IntFormat)                                                               \
+#define fmt_f(f, dec)                                                          \
+    &(FloatFormat)                                                             \
     {                                                                          \
-        STR_HEADER(expand_int), val, 0, true                                   \
+        (FmtHeader){write_float}, f, dec                                       \
     }
 
+#define fmt_b(val)                                                             \
+    &(BoolFormat)                                                              \
+    {                                                                          \
+        (FmtHeader){write_bool, val ? 4 : 5}, val                              \
+    }
+
+#define fmt_p(val)                                                             \
+    &(PtrFormat)                                                               \
+    {                                                                          \
+        (FmtHeader){write_ptr}, (void*)val                                     \
+    }
+
+// TODO: should be handeled by string mode
 #define STR_OBJ(val)                                                           \
     &(StrFormat)                                                               \
     {                                                                          \
-        STR_HEADER(expand_str), val                                            \
+        (FmtHeader){write_str_obj}, val                                        \
     }
 
-#define STR(val)                                                               \
+#define fmt_s(val)                                                             \
     &(StrFormat)                                                               \
     {                                                                          \
-        STR_HEADER(use_str), val                                               \
+        (FmtHeader){write_str, val.len}, val                                   \
     }
-#define CH(val)                                                                \
+
+#define fmt_c(val)                                                             \
     &(CharFormat)                                                              \
     {                                                                          \
-        STR_HEADER(use_char), val                                              \
+        (FmtHeader){write_char, 1}, val                                        \
     }
 
-#define LIT(val)                                                               \
+// PERF: i'm now measuring the len of the literal twice
+//  dunno how to optimize this, without having a temprorary value save?
+//  -> Would need a scope here
+#define fmt_l(val)                                                             \
     &(StrFormat)                                                               \
     {                                                                          \
-        STR_HEADER(use_str), str_static(val)                                   \
+        (FmtHeader){write_str, strlen(val)}, str_static(val)                   \
     }

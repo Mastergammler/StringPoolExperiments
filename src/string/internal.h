@@ -16,6 +16,14 @@
 
 #define SENTINEL 0xf8
 #define ASCII_SPACE 32
+#define INT_SIGN (1U << 31)
+#define ASCII_NUM_OFFSET 48
+
+#define FMT_STR_SIZE 14
+#define FMT_F_SIZE 3
+#define STR_PREVIEW_LEN 13
+
+#define AVERAGE_PH_LEN 8
 
 static const char TRUE_STR[] = "true";
 static const char FALSE_STR[] = "false";
@@ -31,6 +39,11 @@ static const char HEX_DIGITS[] = "0123456789abcdef";
                StrMem->pool_count);                                            \
         &StrMem->pools[index];                                                 \
     })
+
+#define POOL_DEFAULTS(opt)                                                     \
+    .is_slice = opt.substring_mode,                                            \
+    .null_terminated =                                                         \
+        !opt.substring_mode && !POOL(opt.pool_idx)->neglect_null_termination
 
 #ifdef __cplusplus
 extern "C"
@@ -49,37 +62,34 @@ extern "C"
 
     StrSplitResult string_split_last(str src, char splitAt, StrSplitOpt opt);
 
-    str string_alloc(StringPool* pool, const char* cstr, int len);
-    void string_append(StringPool* pool, str* src, str extension);
-    str string_join(StringPool* pool, str* strings, int count, str delim);
+    str string_alloc(StrPoolOptions opt, const char* cstr, int len);
+    str string_join(StrPoolOptions opt, str* strings, int count, str delim);
+    void string_append(StrPoolOptions opt, str* src, str extension);
+    str string_repeat(StrPoolOptions opt, str src, int num);
 
     void debug_print_pool(StringPool pool, int stride);
     void pool_init(StringPool* pool, uint64_t size);
-    void* pool_check_next(StringPool* pool, int maxSize);
-    void* pool_use(StringPool* pool, uint64_t size);
+    void* pool_check_next(StrPoolOptions opt, int maxSize);
+    void* pool_use(StrPoolOptions opt, uint64_t size);
 
-    str format_binary(StringPool* pool, int num);
-    str format_ptr(StringPool* pool, void* ptr);
-    str format_bool(StringPool* pool, bool boolean);
-    str format_int(StringPool* pool, int num, int places);
-    str format_pad_left(StringPool* pool, str original, char c, int n);
-    str format_float(StringPool* pool, float f, int decimals);
-    str format_str(StringPool* pool, str string);
     str format_expand(str formatter, ...);
     str format_cstr(const char* formatter, ...);
 
     void print_ln(str string, FILE* stream, va_list args);
     void print_str(const char* cstr, FILE* stream, va_list args);
 
-    str expand_int(StringPool* pool, FmtHeader* header);
-    str expand_float(StringPool* pool, FmtHeader* header);
-    str expand_str(StringPool* pool, FmtHeader* header);
-    str use_str(StringPool* pool, FmtHeader* header);
-    str use_char(StringPool* pool, FmtHeader* header);
+    str write_int(StrPoolOptions opt, FmtHeader* header);
+    str write_num(StrPoolOptions opt, FmtHeader* header);
+    str write_int_strategy(StrPoolOptions opt, FmtHeader* header);
+    str write_float(StrPoolOptions opt, FmtHeader* header);
+    str write_str_obj(StrPoolOptions opt, FmtHeader* header);
+    str write_str(StrPoolOptions opt, FmtHeader* header);
+    str write_char(StrPoolOptions opt, FmtHeader* header);
+    str write_ptr(StrPoolOptions opt, FmtHeader* header);
+    str write_bool(StrPoolOptions opt, FmtHeader* header);
+    str write_binary(StrPoolOptions opt, FmtHeader* header);
+    str write_pad_left(StrPoolOptions opt, FmtHeader* header);
 
-    str expand_ptr(StringPool* pool, FmtHeader* header);
-    str expand_bool(StringPool* pool, FmtHeader* header);
-    str string_repeat(StringPool* pool, str src, int num);
     str format_valist(StrPoolOptions opt, str formatter, va_list args);
 
     int get_and_reserve_arg_buf();
@@ -87,14 +97,12 @@ extern "C"
     bool str_equals_options(str a, str b, StrCompareOptions opt);
     bool str_ends_with_options(str cmp, str ending, StrCompareOptions opt);
     bool str_starts_with_options(str cmp, str start, StrCompareOptions opt);
-    str format_char(StringPool* pool, char ch);
 
-    uint64_t memory_size(StringPool* pool, uint64_t charCount);
-    int finalize_str(StringPool* pool, char* strStart, uint64_t charCount);
+    uint64_t memory_size(StrPoolOptions opt, uint64_t charCount);
+    int finalize_str(StrPoolOptions opt, char* strStart, uint64_t charCount);
 
+    // TODO: NOT USED AFTER ALL
     NumDesc extract_signed(int64_t num, int minDigits);
-    PrintHeader* num_formatter(FmtHeader* header);
-    // str print_signed(StringPool* pool, PrintHeader* numData);
     str print_signed(char* writeCursor, PrintHeader* header);
 
 #ifdef __cplusplus
@@ -102,6 +110,4 @@ extern "C"
 #endif
 
 #endif
-BoolDesc extract_bool(bool val);
-str print_static(char* writeCursor, PrintHeader* header);
-PrintHeader * bool_formatter(FmtHeader* header);
+bool pool_fits_till_end(StrPoolOptions opt, uint64_t size);

@@ -2,33 +2,42 @@
 
 // copy string into own pool
 // -> including null terminator
-str string_alloc(StringPool* pool, const char* cstr, int len)
+str string_alloc(StrPoolOptions opt, const char* cstr, int len)
 {
-
-    char* strStart = pool_use(pool, memory_size(pool, len));
-    memcpy(strStart, cstr, memory_size(pool, len));
-    len += finalize_str(pool, strStart, len);
+    char* strStart = pool_use(opt, memory_size(opt, len));
+    memcpy(strStart, cstr, memory_size(opt, len));
+    len += finalize_str(opt, strStart, len);
 
     return (str){.chars = strStart,
                  .len = len,
-                 .null_terminated = !pool->neglect_null_termination,
+                 .null_terminated =
+                     !POOL(opt.pool_idx)->neglect_null_termination,
                  .is_slice = false,
                  .is_static = false};
+}
+
+// NOTE: if we don't fit in the end section, we just start over
+// To be able to easily memcpy or print contiguous memory
+// without having to write a extra function that supports
+// wrapping
+// This is especially relevant, that a printed string stays
+// contiguous within memory, else all using functions would need
+// to hanlde ring buffers themselves
+void manage_ring_buffer(StringPool* pool, uint64_t maxSize)
+{
+    if (pool->cursor_idx + maxSize >= pool->capacity)
+    {
+        pool->cursor_idx = 0;
+    }
 }
 
 /*
  * Actually moves the used pointer forward
  */
-void* pool_use(StringPool* pool, uint64_t size)
+void* pool_use(StrPoolOptions opt, uint64_t size)
 {
-    // NOTE: if we don't fit in the end section, we just start over
-    // To be able to easily memcpy or print contiguous memory
-    // without having to write a extra function that supports
-    // wrapping
-    if (pool->ring_buffer && pool->cursor_idx + size >= pool->capacity)
-    {
-        pool->cursor_idx = 0;
-    }
+    StringPool* pool = POOL(opt.pool_idx);
+    if (pool->ring_buffer) manage_ring_buffer(pool, size);
 
     ASSERT(pool->cursor_idx + size < pool->capacity,
            "Pool %i has not enough space left (%lu/%lu taken %lu requested)",
@@ -56,11 +65,20 @@ void str_pool_reset_to(StrPoolOptions opt, uint64_t pos)
     pool->cursor_idx = pos;
 }
 
+bool pool_fits_till_end(StrPoolOptions opt, uint64_t size)
+{
+    StringPool* pool = POOL(opt.pool_idx);
+    return (pool->capacity - size) > pool->cursor_idx;
+}
+
 /*
  * Just checks if enough space is in principle available
  */
-void* pool_check_next(StringPool* pool, int maxSize)
+void* pool_check_next(StrPoolOptions opt, int maxSize)
 {
+    StringPool* pool = POOL(opt.pool_idx);
+    if (pool->ring_buffer) manage_ring_buffer(pool, maxSize);
+
     ASSERT(pool->cursor_idx + maxSize < pool->capacity,
            "Pool %i has not enough space left (%lu/%lu taken %i reuqested)",
            pool->pool_idx, pool->cursor_idx, pool->capacity, maxSize);

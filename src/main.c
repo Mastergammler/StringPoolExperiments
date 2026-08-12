@@ -7,6 +7,11 @@
 
 #include <stdio.h>
 
+// TODO: create a macro, to expand array into fmt args?
+// -> Is this not somehow possible?
+#define EXP_8_ARG(arr)                                                         \
+    &arr[0], &arr[1], &arr[2], &arr[3], &arr[4], &arr[5], &arr[6], &arr[7]
+
 void test_simple_perf(int iterations)
 {
     Timer perf = {};
@@ -85,12 +90,12 @@ void test2()
     Timer t;
     timer_start(&t);
     float initTime = timer_elapsed_ms(&t);
-    str_printc("Buffer Init: % ms", FLOAT(initTime, 3));
+    str_printc("Buffer Init: % ms", fmt_f(initTime, 3));
     float formatTime = timer_elapsed_ms(&t);
     printf("Buffer Init: %.3f ms\n", initTime);
     float pfFormatTime = timer_elapsed_ms(&t);
     str_printc("Own f-format: % ms\nPrintf f-format: % ms",
-               FLOAT(formatTime, 4), FLOAT(pfFormatTime, 4));
+               fmt_f(formatTime, 4), fmt_f(pfFormatTime, 4));
 
     timer_elapsed_ms(&t);
     str tmpl = str_alloc("This is a static string template. % time we already "
@@ -99,34 +104,36 @@ void test2()
     int iterations = 20;
     for (int i = 0; i < iterations; i++)
     {
-        str_print(tmpl, NUM(i), STR_OBJ(tmpl));
+        str_print(tmpl, fmt_n(i), STR_OBJ(tmpl));
     }
-    str formatted =
-        str_format(tmpl, NUM(iterations), STR_OBJ(str_static("Something new")));
+    str formatted = str_format(tmpl, fmt_n(iterations),
+                               STR_OBJ(str_static("Something new")));
     float aFewFormats = timer_elapsed_ms(&t);
-    str_printc("21 Formats: %", FLOAT(aFewFormats, 3));
+    str_printc("21 Formats: %", fmt_f(aFewFormats, 3));
 
     str a = str_static("'First One'");
     str b = str_alloc("'Second One'");
-    str_printc("%-%", STR(a), STR(b));
-    str_printc("-%-%", STR(a), STR(b));
-    str_printc("-%-%- %:%", STR(a), STR(b), NUM(0b1101101), INT_BIN(0b1101101));
+    str_printc("%-%", fmt_s(a), fmt_s(b));
+    str_printc("-%-%", fmt_s(a), fmt_s(b));
+    str_printc("-%-%- %:%", fmt_s(a), fmt_s(b), fmt_n(0b1101101),
+               fmt_n(0b1101101, pxB));
     float threeFormats = timer_elapsed_ms(&t);
-    str_printc("| % ms : % formats | % ms other formats", FLOAT(aFewFormats, 3),
-               NUM(iterations), FLOAT(threeFormats, 3));
+    str_printc("| % ms : % formats | % ms other formats", fmt_f(aFewFormats, 3),
+               fmt_n(iterations), fmt_f(threeFormats, 3));
 
-    str_printc("% % % % %", FLOAT(aFewFormats, 0), FLOAT(aFewFormats, 1),
-               FLOAT(aFewFormats, 2), FLOAT(aFewFormats, 3),
-               FLOAT(aFewFormats, 4));
+    str_printc("% % % % %", fmt_f(aFewFormats, 0), fmt_f(aFewFormats, 1),
+               fmt_f(aFewFormats, 2), fmt_f(aFewFormats, 3),
+               fmt_f(aFewFormats, 4));
 
-    str_printc("> ipos % - ineg % - ibin %", NUM(5), NUM(-7), INT_BIN(19));
+    str_printc("> ipos % - ineg % - ibin %", fmt_n(5), fmt_n(-7),
+               fmt_n(19, pxB));
 
-    str_printc("'%' - %", STR(a), STR_OBJ(a));
+    str_printc("'%' - %", fmt_s(a), STR_OBJ(a));
 }
 
 NumFormat* pInMethod()
 {
-    NumFormat* fmt = NUM(5);
+    NumFormat* fmt = fmt_n(5);
     int dumme = 123455;
     NumFormat actualObj = *fmt;
     printf("%p %ld\n", fmt, fmt->value);
@@ -146,8 +153,8 @@ void test_compares()
     printf("Outside: %p %ld\n", fmt, fmt->value);
 
     str formatted =
-        str_formatc("% - % - % - % - %", FLOAT(1.005, 5), FLOAT(1.005, 4),
-                    FLOAT(1.005, 3), FLOAT(0.07, 2), FLOAT(0.07, 1));
+        str_formatc("% - % - % - % - %", fmt_f(1.005, 5), fmt_f(1.005, 4),
+                    fmt_f(1.005, 3), fmt_f(0.07, 2), fmt_f(0.07, 1));
 
     str first = str_static("ToCompare");
     str firstLower = str_static("tocompare");
@@ -164,9 +171,9 @@ void test_compares()
     bool notLonger = str_equals_opt(first, justLonger, caseInsensitive);
     float cmpTime = timer_elapsed_ms(&t);
 
-    str_printc("| %  ms for 5 comparisons | % (t %) % % %", FLOAT(cmpTime, 5),
-               BOO(notLower), BOO(withLower), BOO(notPart), BOO(notAtAll),
-               BOO(notLonger));
+    str_printc("| %  ms for 5 comparisons | % (t %) % % %", fmt_f(cmpTime, 5),
+               fmt_b(notLower), fmt_b(withLower), fmt_b(notPart),
+               fmt_b(notAtAll), fmt_b(notLonger));
 }
 
 void testing_floats()
@@ -175,25 +182,25 @@ void testing_floats()
     timer_elapsed_ms(&t);
     float num = 3.97152;
     float num2 = 3.31;
-    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% [0-2]%", FLOAT(num, 0),
-               FLOAT(num, 1), FLOAT(num, 2), FLOAT(num, 3), FLOAT(num, 4),
-               FLOAT(num, 5), FLOAT(num2, 0));
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% [0-2]%", fmt_f(num, 0),
+               fmt_f(num, 1), fmt_f(num, 2), fmt_f(num, 3), fmt_f(num, 4),
+               fmt_f(num, 5), fmt_f(num2, 0));
 
     float multi = -3.9999;
-    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", FLOAT(multi, 0),
-               FLOAT(multi, 1), FLOAT(multi, 2), FLOAT(multi, 3),
-               FLOAT(multi, 4), FLOAT(multi, 5));
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", fmt_f(multi, 0),
+               fmt_f(multi, 1), fmt_f(multi, 2), fmt_f(multi, 3),
+               fmt_f(multi, 4), fmt_f(multi, 5));
     float format10 = timer_elapsed_ms(&t);
-    str_printc("Formatting 10 floats: %", FLOAT(format10, 3));
+    str_printc("Formatting 10 floats: %", fmt_f(format10, 3));
 
     float leadingZero = 3.0007;
-    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", FLOAT(leadingZero, 0),
-               FLOAT(leadingZero, 1), FLOAT(leadingZero, 2),
-               FLOAT(leadingZero, 3), FLOAT(leadingZero, 4),
-               FLOAT(leadingZero, 5));
+    str_printc("[0]%  [1]% [2]%  [3]%  [4]%  [5]% ", fmt_f(leadingZero, 0),
+               fmt_f(leadingZero, 1), fmt_f(leadingZero, 2),
+               fmt_f(leadingZero, 3), fmt_f(leadingZero, 4),
+               fmt_f(leadingZero, 5));
 
     str partAlloc = str_allocn("This is my string", 6);
-    str_printc("%", STR(partAlloc));
+    str_printc("%", fmt_s(partAlloc));
     str_printc("I'm a freaking ninja now!");
     str_printc("That reall kind of works huh?");
 }
@@ -213,8 +220,8 @@ void print_hres(int hres)
     // STFO: why 15???? why does the mask contain only 15 bits????
     short codeMask = 0b111111111111111;
 
-    str_printc("Hres: %, FacilityMask %, codemask %", INT_BIN(hres),
-               INT_BIN(facilityMask), INT_BIN(codeMask));
+    str_printc("Hres: %, FacilityMask %, codemask %", fmt_n(hres, pxB),
+               fmt_n(facilityMask, pxB), fmt_n(codeMask, pxB));
 
     int facility = hres >> 16 & facilityMask;
     int code = hres & codeMask;
@@ -222,9 +229,9 @@ void print_hres(int hres)
 
     printf("Facility: %x Code: %x Code2: %x\n", facility, code, code2);
     str_printc("Failure %, Reserved %, Custom %, NtStatus %, ReservedX %",
-               BOO(hres & severityMask), BOO(hres & reservedMask),
-               BOO(hres & customerMask), BOO(hres & ntStatusMask),
-               BOO(hres & reservedX));
+               fmt_b(hres & severityMask), fmt_b(hres & reservedMask),
+               fmt_b(hres & customerMask), fmt_b(hres & ntStatusMask),
+               fmt_b(hres & reservedX));
 }
 
 typedef struct
@@ -240,7 +247,6 @@ typedef enum
 {
     POOL_DEFAULT,
     POOL_PRINT,
-    POOL_TRANSIENT,
     POOL_count
 } StrPools;
 
@@ -248,12 +254,12 @@ static Program Prog;
 
 void testing_strings_etc()
 {
-    str_printc("% % % % % % %", NUM(1), NUM(12), NUM(237), NUM(5730),
-               NUM(-7738), NUM(50027), NUM(0));
-    str_printc("% % % % % %", NUM_PAD(5, 0), NUM_PAD(5, 1), NUM_PAD(5, 2),
-               NUM_PAD(5, 3), NUM_PAD(307, 5), NUM_PAD(0, 3));
-    str_printc("% % % % %", NUM_PAD(7, 7), NUM(10), NUM_PAD(10, 2), NUM(11),
-               NUM(100));
+    str_printc("% % % % % % %", fmt_n(1), fmt_n(12), fmt_n(237), fmt_n(5730),
+               fmt_n(-7738), fmt_n(50027), fmt_n(0));
+    str_printc("% % % % % %", fmt_n(5, 0, 0), fmt_n(5, 0, 1), fmt_n(5, 0, 2),
+               fmt_n(5, 0, 3), fmt_n(307, 0, 5), fmt_n(0, 0, 3));
+    str_printc("% % % % %", fmt_n(7, 0, 7), fmt_n(10), fmt_n(10, 0, 2),
+               fmt_n(11), fmt_n(100));
 
     testing_floats();
 
@@ -263,7 +269,7 @@ void testing_strings_etc()
 
     str joined =
         str_joinc(maStrings, count, ">>Totally busted and stuff yeee<<");
-    str_printc("Joined: %", STR(joined));
+    str_printc("Joined: %", fmt_s(joined));
 
     int hres = -2146233087;
     print_hres(hres);
@@ -271,7 +277,6 @@ void testing_strings_etc()
     // timer_elapsed_ms(&t);
     debug_print_pool(Prog.strings.pools[POOL_DEFAULT], 64);
     debug_print_pool(Prog.strings.pools[POOL_PRINT], 64);
-    debug_print_pool(Prog.strings.pools[POOL_TRANSIENT], 64);
 }
 
 StringMemory* StrMem;
@@ -288,18 +293,17 @@ void init_program(uint64_t memory)
     str_pool_prepare(Prog.ctx, &Prog.strings, POOL_count);
     define_pool(POOL_DEFAULT, 512, .is_default = true);
     define_pool(POOL_PRINT, 256, .is_print = true);
-    define_pool(POOL_TRANSIENT, 128, .is_transient = true);
     str_pool_finalize(Prog.ctx);
 
-    str_printc("Program init: % ms", FLOAT(timer_elapsed_ms(&Prog.timer), 3));
+    str_printc("Program init: % ms", fmt_f(timer_elapsed_ms(&Prog.timer), 3));
 }
 
 void print_ascii()
 {
-    str_printc("Space-ascii: %", NUM(' '));
-    str_printc("Tab-ascii: %", NUM('\t'));
-    str_printc("Newline-ascii: %", NUM('\n'));
-    str_printc("CR-ascii: %", NUM('\r'));
+    str_printc("Space-ascii: %", fmt_n(' '));
+    str_printc("Tab-ascii: %", fmt_n('\t'));
+    str_printc("Newline-ascii: %", fmt_n('\n'));
+    str_printc("CR-ascii: %", fmt_n('\r'));
 }
 
 void array_test()
@@ -311,13 +315,13 @@ void array_test()
 
     for (int i = 0; i < arr_len(myInt); i++)
     {
-        str_printc("Array el: %", NUM(myInt[i]));
+        str_printc("Array el: %", fmt_n(myInt[i]));
     }
 
     print_ascii();
 
     str someString = str_static("  \t\nThis is my string  \t\r\r");
-    str_printc("'%'", STR(str_trim(someString)));
+    str_printc("'%'", fmt_s(str_trim(someString)));
 }
 
 void xor_tests()
@@ -335,14 +339,14 @@ void xor_tests()
         while (res >= cmp10 && loops < 5)
         {
             res = cmp10 ^ stripped;
-            str_printc("[%] Stripped res: %", NUM(loops), INT_BIN(res));
+            str_printc("[%] Stripped res: %", fmt_n(loops), fmt_n(res, pxB));
             loops++;
         }
 
-        str_printc("10: (%) % ^ % -> %", NUM(i), INT_BIN(stripped),
-                   INT_BIN(cmp10), NUM(res));
-        // str_printc("100: (%) % ^ % -> %", NUM(i), INT_BIN(i),
-        // INT_BIN(cmp100), NUM(xor100));
+        str_printc("10: (%) % ^ % -> %", fmt_n(i), fmt_n(stripped, pxB),
+                   fmt_n(cmp10, pxB), fmt_n(res));
+        // str_printc("100: (%) % ^ % -> %", fmt_n(i), INT_BIN(i),
+        // INT_BIN(cmp100), fmt_n(xor100));
     }
 }
 
@@ -354,30 +358,76 @@ int main(int argc, char* argv[])
 
     StringPool* transient = &StrMem->pools[StrMem->default_pool];
     int64_t num = -1527713833408340293;
+
+    // it seems cacheing only applies if i print the exact same value
+    // -> Then it's quite a bit faster, but else just a bit
+    // => I mean it's still 5.00 microns difference but yea
+    printf("Checking if this leads to printf cacheing\n");
     timer_start(&timer);
 
-    str_printc("Num: '%'", NUM(num));
+    str_printc("Num: '%'", fmt_u(num));
     float printDirect = timer_elapsed_ms(&timer);
+
     NumDesc p = extract_signed(num, 0);
     str expanded = print_signed(transient->memory, &p.header);
-    str_printc("Num: '%'", STR(expanded));
+    str_printc("Num: '%'", fmt_s(expanded));
     float printNew = timer_elapsed_ms(&timer);
-    str numStr = str_formatc("%", NUM(num));
-    str_printc("Num: '%'", STR(numStr));
+
+    str numStr = str_formatc("%", fmt_n(num));
+    str_printc("Num: '%'", fmt_s(numStr));
     float printOld = timer_elapsed_ms(&timer);
-    printf("Num: '%ld'\n", (long)num);
-    float printf = timer_elapsed_ms(&timer);
-    str_printc("% - %", BOO(true), BOO(false));
+
+    printf("Num: '%lu'\n", (long)num);
+    float tprintf = timer_elapsed_ms(&timer);
+
+    str_printc("% - %", fmt_b(true), fmt_b(false));
     float printStatic = timer_elapsed_ms(&timer);
-    // str_printc("%", NUM(num, .binary = true));
+
+    str_printc("Bin: %", fmt_n(num, pxB));
+    str_printc("Padded: %", fmt_n(172, 0, 5));
+
+    // testing_strings_etc();
 
     float printPoolTime = timer_elapsed_ms(&Prog.timer);
     float programTime = timer_ms_since_start(&Prog.timer);
-    str_printc("| % ms print pool | % ms program runtime \n| % old | % new | % "
-               "printDirect | % printf | % static |",
-               FLOAT(printPoolTime, 3), FLOAT(programTime, 3),
-               FLOAT(printOld, 5), FLOAT(printNew, 5), FLOAT(printDirect, 5),
-               FLOAT(printf, 5), FLOAT(printStatic, 5));
+    str_printc(
+        "| % ms print pool | % ms program runtime \n| % fmt-print | % new | % "
+        "printDirect | % printf | % static |",
+        fmt_f(printPoolTime, 3), fmt_f(programTime, 3), fmt_f(printOld, 5),
+        fmt_f(printNew, 5), fmt_f(printDirect, 5), fmt_f(tprintf, 5),
+        fmt_f(printStatic, 5));
+
+    FloatFormat times[16];
+    timer_start(&timer);
+    for (int i = 0; i < 16; i++)
+    {
+        str_printc("Num: %", fmt_n(num + 10 * i));
+        float elapsed = timer_elapsed_ms(&timer);
+        times[i] = *fmt_f(elapsed, 5);
+    }
+
+    str_printc("% % % % % % % %", EXP_8_ARG(times));
+    str_printc("% % % % % % % %", EXP_8_ARG((times + 8)));
+
+    debug_print_pool(*POOL(POOL_PRINT), 64);
+
+    timer_start(&timer);
+    str_printc("Bin: %", fmt_n(num, pxB));
+    float normalPrint = timer_elapsed_ms(&timer);
+    str_printc("Bin: % and something", fmt_n(num, pxB));
+    float wraparound = timer_elapsed_ms(&timer);
+    str_printc("Bin: % and more", fmt_n(num, pxB));
+    float wrap2 = timer_elapsed_ms(&timer);
+    str_printc("Bin: % ...", fmt_n(num, pxB));
+    float wrap3 = timer_elapsed_ms(&timer);
+    str_printc("Bin: % last", fmt_n(num, pxB));
+    float wraplast = timer_elapsed_ms(&timer);
+
+    str_printc("| % normal | % wrapped | % w2 | % w3 | % last |",
+               fmt_f(normalPrint, 5), fmt_f(wraparound, 5), fmt_f(wrap2, 5),
+               fmt_f(wrap3, 5), fmt_f(wraplast, 5));
+
+    debug_print_pool(*POOL(POOL_PRINT), 64);
 
     return 0;
 }

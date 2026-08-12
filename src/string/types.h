@@ -8,6 +8,27 @@
 #include <stddef.h>
 #include <stdint.h>
 
+typedef enum
+{
+    /* decimal */
+    pxD,
+    /* unsigned */
+    pxU,
+    /* binary */
+    pxB,
+    /* hex */
+    pxH,
+    /* object */
+    pxO
+} PrintMode;
+
+typedef enum
+{
+    FMT_ANY,
+    FMT_STR,
+    FMT_count
+} HeaderType;
+
 typedef struct
 {
     const char* chars;
@@ -71,6 +92,29 @@ typedef struct
 
 typedef struct
 {
+    uint8_t pool_idx;
+
+    /*
+     * printing without defined endings, used for substrings
+     * when a format 'concats' a string out of multiple substrings,
+     * then the defined pool endings are skipped, since we're inside the string
+     * this affects how the length of the string is calculated, so use with
+     * caution
+     */
+    bool substring_mode;
+} StrPoolOptions;
+
+typedef struct
+{
+    bool is_default;
+    bool is_print;
+    /* omits setting defaults for some pools (print pool) */
+    bool no_defaults;
+
+} StrPoolInitOptions;
+
+typedef struct
+{
 } StrSplitOpt;
 typedef struct
 {
@@ -79,23 +123,11 @@ typedef struct
 } StrSplitResult;
 
 typedef struct FmtHeader FmtHeader;
+typedef str (*Formatter)(StrPoolOptions opt, FmtHeader*);
+
 typedef struct PrintHeader PrintHeader;
-typedef str (*Formatter)(StringPool* pool, FmtHeader*);
 typedef PrintHeader* (*PrintInfo)(FmtHeader*);
 typedef str (*Printer)(char* writeCursor, PrintHeader*);
-
-// STFO: this wouldn't allow me to create custom formatters
-// that i can just put into the function ...
-// -> unless i put in a function pointer to the expander function?
-// TODO: legacy: I currently support 2 types, because else i need to
-// migrate all of them at the same time
-// But untimately every type should use the print-info expander
-struct FmtHeader
-{
-    Formatter fmt_fn;
-    /* is null if not used */
-    PrintInfo info_fn;
-};
 
 struct PrintHeader
 {
@@ -120,30 +152,22 @@ typedef struct
 
 } NumDesc;
 
-typedef struct
+struct FmtHeader
 {
-    PrintHeader header;
-    /* static string of the name to print */
-    str static_name;
-} BoolDesc;
+    Formatter fmt_fn;
+    uint32_t est_len;
+};
 
 typedef struct
 {
     FmtHeader header;
     bool value;
-    BoolDesc desc;
 } BoolFormat;
 
 typedef struct
 {
-    bool case_insensitive;
-
-} StrCompareOptions;
-
-typedef struct
-{
     FmtHeader header;
-    float value;
+    double value;
     int decimals;
 } FloatFormat;
 
@@ -160,9 +184,8 @@ typedef struct
 {
     FmtHeader header;
     int64_t value;
+    PrintMode mode;
     int places;
-    bool binary;
-    NumDesc desc;
 } NumFormat;
 
 typedef struct
@@ -175,6 +198,8 @@ typedef struct
 {
     FmtHeader header;
     str value;
+    int pad_left_count;
+    char pad_char;
 } StrFormat;
 
 typedef struct
@@ -186,9 +211,7 @@ typedef struct
 typedef struct
 {
     FmtHeader* header;
-    PrintHeader* print_header;
-    int placholder_idx;
-    str expanded;
+    int placholder_pos;
 } FmtArg;
 
 typedef struct
@@ -200,18 +223,8 @@ typedef struct
 
 typedef struct
 {
-    uint8_t pool_idx;
-    bool keep_transients;
-} StrPoolOptions;
+    bool case_insensitive;
 
-typedef struct
-{
-    bool is_default;
-    bool is_print;
-    bool is_transient;
-    /* omits setting defaults for some pools (print pool) */
-    bool no_defaults;
-
-} StrPoolInitOptions;
+} StrCompareOptions;
 
 #endif

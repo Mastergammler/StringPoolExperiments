@@ -38,14 +38,6 @@ void str_pool_define(uint8_t index, uint64_t size, StrPoolInitOptions opt)
         StrMem->print_pool = index;
     }
 
-    if (opt.is_transient)
-    {
-        ASSERT(StrMem->transient_pool == 0,
-               "Transient pool was already defined for index %i",
-               StrMem->transient_pool);
-        StrMem->transient_pool = index;
-    }
-
     StrMem->pools[index] = (StringPool){};
     StringPool* pool = &StrMem->pools[index];
     pool->capacity = size;

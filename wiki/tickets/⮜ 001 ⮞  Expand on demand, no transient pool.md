@@ -1,20 +1,24 @@
 ---
 created: 2026-08-04T23:10
-finished: 
+finished: 2026-08-14T11:10
 ---
-#ticket/open
+#ticket/closed
 
 [[Removing Transient Pool first approach]]
 
 ## Tasks
 - [x] Int printing up to [[u64]] 
-- [ ] 2 Versions for signed and unsigned required
-- [ ] ~Migration function~
-    - [ ] Print floats
-- [ ] Remove need for intermediate functions (`expand_xxx`)
-- [ ] Functions should accept [[PoolOptions]]
-- [ ] Format prints into the buffer directly
-- [ ] Rework Num function, to support [[i64]]
+- [x] 2 Versions for signed and unsigned required
+- [x] Remove need for intermediate functions (`expand_xxx`)
+- [x] Functions should accept [[PoolOptions]]
+- [x] Format prints into the buffer directly
+- [x] Fix printing error
+- [x] Function rework
+    - [ ] ~~Print float optimizations~~ -> Not necessary
+    - [x] Write binary
+    - [x] Print num ([[i64]])
+- [x] Circular buffer handling
+- [x] Fix *pool_check_next* handling, it doesn't handle circular buffers ...
 
 ## Description
 As it turned out, the first approach was not a good idea, the 
@@ -46,11 +50,10 @@ if(!canFit || !likelyFits) -> Wrap right away
 else // try to print it
     if(didntFit)  realloc();
 ```
-With this approach, the likelyhood of hitting this case should be very low, so 
-it should be fine performance wise. (Which the overhead should not be hughe 
-anyway)
+With this approach, the likelyhood of hitting this case should be very low, 
+so it should be fine performance wise. 
+(Which the overhead should not be hughe anyway)
 
--> This might only matter for really long strings, but that's not what the lib 
-   is designed for anyway ...
-
+This might only matter for really long strings, 
+but that's not what the lib is designed for anyway ...
 
