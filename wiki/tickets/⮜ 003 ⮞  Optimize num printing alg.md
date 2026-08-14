@@ -4,7 +4,13 @@ finished:
 ---
 #ticket/open
 
+> This might be unecessary, because the len calculation is the cheap part of 
+> the whole calculation anyway. For integeres it might make sense, but in other
+> cases it might be overkill (like bin & ptr values)
+
 ## Tasks
+- [ ] Optimize int / decimal printing
+- [ ] Optimize float function (remove sub print)
 
 ## Description
 Currently the num printing alg first calculates the length and then the numbers.

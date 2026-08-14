@@ -69,8 +69,8 @@ extern "C"
 
     void debug_print_pool(StringPool pool, int stride);
     void pool_init(StringPool* pool, uint64_t size);
-    void* pool_check_next(StrPoolOptions opt, int maxSize);
     void* pool_use(StrPoolOptions opt, uint64_t size);
+    bool pool_fits_till_end(StrPoolOptions opt, uint64_t size);
 
     str format_expand(str formatter, ...);
     str format_cstr(const char* formatter, ...);
@@ -110,4 +110,3 @@ extern "C"
 #endif
 
 #endif
-bool pool_fits_till_end(StrPoolOptions opt, uint64_t size);

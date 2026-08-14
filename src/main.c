@@ -422,10 +422,26 @@ int main(int argc, char* argv[])
     float wrap3 = timer_elapsed_ms(&timer);
     str_printc("Bin: % last", fmt_n(num, pxB));
     float wraplast = timer_elapsed_ms(&timer);
+    str_printc("Bin: % SHORT", fmt_n(237, pxB));
+    float wrapShort = timer_elapsed_ms(&timer);
 
-    str_printc("| % normal | % wrapped | % w2 | % w3 | % last |",
+    str_printc("| % normal | % wrapped | % w2 | % w3 | % last | % short |",
                fmt_f(normalPrint, 5), fmt_f(wraparound, 5), fmt_f(wrap2, 5),
-               fmt_f(wrap3, 5), fmt_f(wraplast, 5));
+               fmt_f(wrap3, 5), fmt_f(wraplast, 5), fmt_f(wrapShort, 5));
+
+    str_printc("Binary zero: ( % )", fmt_n(0, pxB));
+    str_printc("Bin2: ( % )", fmt_n(0b110011001100, pxB));
+    str_printc("Bin2: ( % )", fmt_n(-5, pxB));
+    str_printc("Bin2: ( % )", fmt_n(5, pxB));
+    str_printc("Nullpointer: ( % )", fmt_p(0));
+    str_printc("Nullpointer: ( % )", fmt_p(&normalPrint));
+    str_printc("Nullpointer: ( % )", fmt_p(times));
+    str_printc("Nullpointer: ( % )", fmt_p(POOL(POOL_PRINT)));
+    str_printc("Nullpointer: ( % )",
+               fmt_p(str_static("Im in the string section").chars));
+    str_printc("Literally:   ( % )", fmt_p("Im in the string section"));
+    str_printc("Pointy:      ( % )", fmt_p(0xf8f8f8f8f8f8f8f8));
+    str_printc("Pointy:      ( % )", fmt_p(0x1234567890ABCDEF));
 
     debug_print_pool(*POOL(POOL_PRINT), 64);
 

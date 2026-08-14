@@ -30,10 +30,9 @@
 #define fmt_p(val)                                                             \
     &(PtrFormat)                                                               \
     {                                                                          \
-        (FmtHeader){write_ptr}, (void*)val                                     \
+        (FmtHeader){write_ptr, 18}, (void*)val                                 \
     }
 
-// TODO: should be handeled by string mode
 #define STR_OBJ(val)                                                           \
     &(StrFormat)                                                               \
     {                                                                          \

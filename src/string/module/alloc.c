@@ -70,18 +70,3 @@ bool pool_fits_till_end(StrPoolOptions opt, uint64_t size)
     StringPool* pool = POOL(opt.pool_idx);
     return (pool->capacity - size) > pool->cursor_idx;
 }
-
-/*
- * Just checks if enough space is in principle available
- */
-void* pool_check_next(StrPoolOptions opt, int maxSize)
-{
-    StringPool* pool = POOL(opt.pool_idx);
-    if (pool->ring_buffer) manage_ring_buffer(pool, maxSize);
-
-    ASSERT(pool->cursor_idx + maxSize < pool->capacity,
-           "Pool %i has not enough space left (%lu/%lu taken %i reuqested)",
-           pool->pool_idx, pool->cursor_idx, pool->capacity, maxSize);
-
-    return pool->memory + pool->cursor_idx;
-}

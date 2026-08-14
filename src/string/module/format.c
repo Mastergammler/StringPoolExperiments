@@ -97,7 +97,6 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
     str resultStr = {stringStart, 0};
 
     int curFmtPos = 0;
-    int writtenLen = 0;
     for (int arg = 0; arg < argCount; arg++)
     {
         int fmtArgPos = buffer[arg].placholder_pos;

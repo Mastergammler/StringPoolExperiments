@@ -138,28 +138,29 @@ str write_pad_left(StrPoolOptions opt, FmtHeader* header)
 {
     StrFormat* fmt = (StrFormat*)header;
     str original = fmt->value;
-    int n = fmt->pad_left_count;
+    int minLen = fmt->pad_left_count;
     char c = fmt->pad_char;
 
-    if (original.len >= n) return original;
+    if (original.len >= minLen) return original;
 
-    int padAmount = n - original.len;
-    int memoryLen = n + 1;
-    char* curC = pool_check_next(opt, memoryLen);
+    int padLen = minLen - original.len;
+    int strLen = minLen;
 
-    for (int pad = 0; pad < padAmount; pad++)
+    char* text = pool_use(opt, memory_size(opt, minLen));
+    char* curC = text;
+
+    for (int pad = 0; pad < padLen; pad++)
     {
         *curC++ = c;
     }
+
     for (int i = 0; i < original.len; i++)
     {
         *curC++ = original.chars[i];
     }
-    *curC = 0;
 
-    char* newStr = pool_use(opt, memoryLen);
-    return (str){
-        .chars = newStr, .len = memoryLen - 1, .null_terminated = true};
+    strLen += finalize_str(opt, text, strLen);
+    return (str){.chars = text, .len = strLen, POOL_DEFAULTS(opt)};
 }
 
 str write_binary(StrPoolOptions opt, FmtHeader* header)
@@ -169,33 +170,32 @@ str write_binary(StrPoolOptions opt, FmtHeader* header)
 
     // 1 char ber bit - 8 bits/byte
     int maxLen = sizeof(num) * 8;
-    char* curC = pool_check_next(opt, memory_size(opt, maxLen));
+    int actualLen = 1; // we always want to print '0'
 
-    // print from left to right
-    bool stringStarted = false;
-    int actualLength = 0;
     for (int i = maxLen - 1; i >= 0; i--)
     {
-        int bit = (num >> i) & 0x1;
-
-        if (bit == 0x1)
+        bool bitFound = num & (0x1L << i);
+        if (bitFound)
         {
-            *curC++ = '1';
-            stringStarted = true;
-            actualLength++;
-        }
-        else if (stringStarted)
-        {
-            *curC++ = '0';
-            actualLength++;
+            actualLen = i + 1;
+            break;
         }
     }
 
-    char* actualStr = pool_use(opt, actualLength);
-    actualLength += finalize_str(opt, actualStr, actualLength);
+    char* text = pool_use(opt, memory_size(opt, actualLen));
+    char* cur = text;
 
-    return (str){.chars = actualStr, .len = actualLength, POOL_DEFAULTS(opt)};
+    // print from left to right
+    for (int i = actualLen - 1; i >= 0; i--)
+    {
+        bool bitActive = num & (0x1L << i);
+        *cur++ = bitActive ? '1' : '0';
+    }
+
+    actualLen += finalize_str(opt, text, actualLen);
+    return (str){.chars = text, .len = actualLen, POOL_DEFAULTS(opt)};
 }
+
 str write_float(StrPoolOptions opt, FmtHeader* header)
 {
     FloatFormat* fmt = (FloatFormat*)header;
@@ -268,43 +268,40 @@ str write_char(StrPoolOptions opt, FmtHeader* header)
 str write_ptr(StrPoolOptions opt, FmtHeader* header)
 {
     PtrFormat* fmt = (PtrFormat*)header;
-    // 2 hex values for each byte
-    int bytes = sizeof(void*);
-    int printLen = bytes * 2;
-    // '0x' prefix + null-term
-    int size = printLen + 3;
-
-    char* curC = pool_check_next(opt, size);
-
     uintptr_t ptrVal = (uintptr_t)fmt->value;
+    int bytes = sizeof(void*);
 
-    *curC++ = '0';
-    *curC++ = 'x';
-    int actualLen = 2;
-
-    bool stringStarted = false;
-
-    // print from high to lo
+    int byteLen = 1;
     for (int i = bytes - 1; i >= 0; i--)
     {
         char hiVal = (ptrVal >> (i * 8 + 4)) & 0x0F;
         char loVal = (ptrVal >> (i * 8)) & 0x0F;
 
-        if (stringStarted || (hiVal || loVal))
+        if (hiVal || loVal)
         {
-            *curC++ = HEX_DIGITS[(uint8_t)hiVal];
-            *curC++ = HEX_DIGITS[(uint8_t)loVal];
-            actualLen += 2;
+            byteLen = i + 1;
+            break;
         }
     }
 
-    *curC = 0;
-    actualLen++;
+    // 2 hex digits per byte + '0x' prefix
+    int strLen = byteLen * 2 + 2;
+    char* text = pool_use(opt, memory_size(opt, memory_size(opt, strLen)));
+    char* cur = text;
 
-    char* actualStr = pool_use(opt, actualLen);
+    *cur++ = '0';
+    *cur++ = 'x';
 
-    return (str){
-        .chars = actualStr, .len = actualLen - 1, .null_terminated = true};
+    for (int i = byteLen - 1; i >= 0; i--)
+    {
+        uint8_t hiVal = (ptrVal >> (i * 8 + 4)) & 0x0F;
+        uint8_t loVal = (ptrVal >> (i * 8)) & 0x0F;
+        *cur++ = HEX_DIGITS[hiVal];
+        *cur++ = HEX_DIGITS[loVal];
+    }
+
+    strLen += finalize_str(opt, text, strLen);
+    return (str){.chars = text, .len = strLen, POOL_DEFAULTS(opt)};
 }
 
 /*

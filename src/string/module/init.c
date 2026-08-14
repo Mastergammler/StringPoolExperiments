@@ -52,18 +52,21 @@ void str_pool_define(uint8_t index, uint64_t size, StrPoolInitOptions opt)
 
 /**
  * Does the actual allocations for the defined pools
- * Usually 3 pools are expected, a default, a print and a transient pool.
- * The transient pool must be there, in order for string expansion
- * to work, the others are technically optional.
+ * Usually 2 pools are expected, a default and a print pool
  *
  * Pools can also be used by for multiple things, but it's not recommended,
- * since because that would be hard to differentiate in lifetime.
+ * since that would make it hard to differentiate in lifetime.
  */
 void str_pool_finalize(AllocContext ctx)
 {
     for (int i = 0; i < StrMem->pool_count; i++)
     {
         StringPool* pool = &StrMem->pools[i];
+
+        // this indicated, that the pool was not initialized, that
+        // str_pool_define was not called for this index
+        ASSERT(pool->pool_idx == i, "Pool at index %i is not initialized yet!",
+               i);
         pool->memory = ctx.alloc_fn(ctx.alloc, pool->capacity);
         ASSERT(pool->memory, "Allocation failed for pool at idx: %i, size %lu",
                i, pool->capacity);
