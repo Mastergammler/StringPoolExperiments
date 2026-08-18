@@ -65,10 +65,10 @@ extern "C"
     str string_alloc(StrPoolOptions opt, const char* cstr, int len);
     str string_join(StrPoolOptions opt, str* strings, int count, str delim);
     void string_append(StrPoolOptions opt, str* src, str extension);
-    str string_repeat(StrPoolOptions opt, str src, int num);
+    str str_repeat(StrPoolOptions opt, str src, int num);
 
-    void debug_print_pool(StringPool pool, int stride);
-    void pool_init(StringPool* pool, uint64_t size);
+    void debug_print_pool(StrPool pool, int stride);
+    void pool_init(StrPool* pool, uint64_t size);
     void* pool_use(StrPoolOptions opt, uint64_t size);
     bool pool_fits_till_end(StrPoolOptions opt, uint64_t size);
 
@@ -77,6 +77,8 @@ extern "C"
 
     void print_ln(str string, FILE* stream, va_list args);
     void print_str(const char* cstr, FILE* stream, va_list args);
+
+    ParseNRes str_parse_n(str str);
 
     str write_int(StrPoolOptions opt, FmtHeader* header);
     str write_num(StrPoolOptions opt, FmtHeader* header);
@@ -100,6 +102,8 @@ extern "C"
 
     uint64_t memory_size(StrPoolOptions opt, uint64_t charCount);
     int finalize_str(StrPoolOptions opt, char* strStart, uint64_t charCount);
+
+    str format_num_parse_res(StrPoolOptions opt, FmtHeader* header);
 
     // TODO: NOT USED AFTER ALL
     NumDesc extract_signed(int64_t num, int minDigits);

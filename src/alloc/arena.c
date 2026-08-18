@@ -3,7 +3,7 @@
 void arena_init(Arena* arena, uint64_t capacity)
 {
     arena->cursor = 0;
-    arena->capaticy = capacity;
+    arena->capacity = capacity;
     arena->memory = malloc(capacity);
 
     JUST_ASSERT(arena->memory);
@@ -12,7 +12,7 @@ void arena_init(Arena* arena, uint64_t capacity)
 void* arena_use(Arena* arena, uint64_t bytes)
 {
     uint64_t newCursor = arena->cursor + bytes;
-    JUST_ASSERT(newCursor < arena->capaticy);
+    JUST_ASSERT(newCursor < arena->capacity);
     // overflow
     JUST_ASSERT(newCursor >= arena->cursor);
 

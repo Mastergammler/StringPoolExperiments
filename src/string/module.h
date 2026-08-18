@@ -51,10 +51,16 @@ extern "C"
     void str_print(str string, ...);
     void str_printc(const char* cstr, ...);
 
+    const char* str_cstr(str str);
+    const char* str_cstr_opt(StrPoolOptions opt, str str);
+
     str str_formatc(const char* formatter, ...);
     str str_format(str tmplStr, ...);
     str str_formatc_opt(StrPoolOptions opt, const char* formatter, ...);
     str str_format_opt(StrPoolOptions opt, str formatter, ...);
+
+    ParseURes str_parse_u(str str);
+    ParseNRes str_parse_n(str str);
 
     str str_fmt_bin(int num);
     str str_fmt_ptr(void* ptr);

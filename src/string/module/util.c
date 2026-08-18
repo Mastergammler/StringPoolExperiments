@@ -42,7 +42,7 @@ int clamp(int value, int min, int max)
 
 uint64_t memory_size(StrPoolOptions opt, uint64_t charCount)
 {
-    StringPool* pool = POOL(opt.pool_idx);
+    StrPool* pool = POOL(opt.pool_idx);
 
     int nullTermSpace = 0;
     int lfSpace = 0;
@@ -67,7 +67,7 @@ uint64_t memory_size(StrPoolOptions opt, uint64_t charCount)
  */
 int finalize_str(StrPoolOptions opt, char* strStart, uint64_t charCount)
 {
-    StringPool* pool = POOL(opt.pool_idx);
+    StrPool* pool = POOL(opt.pool_idx);
     int addStrLen = 0;
 
     if (pool->add_linefeed && !opt.substring_mode)

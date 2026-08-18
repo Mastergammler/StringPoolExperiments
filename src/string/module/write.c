@@ -33,6 +33,7 @@ static int num_len(int num)
     return len;
 }
 
+[[deprecated("use write_num instead")]]
 str write_int(StrPoolOptions opt, FmtHeader* header)
 {
     IntFormat* fmt = (IntFormat*)header;

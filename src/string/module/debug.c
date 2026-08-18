@@ -1,6 +1,6 @@
 #include "../internal.h"
 
-void debug_print_pool(StringPool pool, int stride)
+void debug_print_pool(StrPool pool, int stride)
 {
     if (pool.ring_buffer)
     {

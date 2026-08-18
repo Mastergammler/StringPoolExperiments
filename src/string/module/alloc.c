@@ -23,7 +23,7 @@ str string_alloc(StrPoolOptions opt, const char* cstr, int len)
 // This is especially relevant, that a printed string stays
 // contiguous within memory, else all using functions would need
 // to hanlde ring buffers themselves
-void manage_ring_buffer(StringPool* pool, uint64_t maxSize)
+void manage_ring_buffer(StrPool* pool, uint64_t maxSize)
 {
     if (pool->cursor_idx + maxSize >= pool->capacity)
     {
@@ -36,7 +36,7 @@ void manage_ring_buffer(StringPool* pool, uint64_t maxSize)
  */
 void* pool_use(StrPoolOptions opt, uint64_t size)
 {
-    StringPool* pool = POOL(opt.pool_idx);
+    StrPool* pool = POOL(opt.pool_idx);
     if (pool->ring_buffer) manage_ring_buffer(pool, size);
 
     ASSERT(pool->cursor_idx + size < pool->capacity,
@@ -57,7 +57,7 @@ void str_pool_reset(StrPoolOptions opt)
  */
 void str_pool_reset_to(StrPoolOptions opt, uint64_t pos)
 {
-    StringPool* pool = POOL(opt.pool_idx);
+    StrPool* pool = POOL(opt.pool_idx);
     ASSERT(pos <= pool->cursor_idx,
            "Cursor must be reset forward (overflow?) actual %lu, requested %lu",
            pool->cursor_idx, pos);
@@ -67,6 +67,6 @@ void str_pool_reset_to(StrPoolOptions opt, uint64_t pos)
 
 bool pool_fits_till_end(StrPoolOptions opt, uint64_t size)
 {
-    StringPool* pool = POOL(opt.pool_idx);
+    StrPool* pool = POOL(opt.pool_idx);
     return (pool->capacity - size) > pool->cursor_idx;
 }

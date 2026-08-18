@@ -111,7 +111,7 @@ void string_append(StrPoolOptions opt, str* src, str extension)
     //  add print slot to debug print
 }
 
-str string_repeat(StrPoolOptions opt, str src, int num)
+str str_repeat(StrPoolOptions opt, str src, int num)
 {
     int len = src.len * num;
     if (len <= 0) return (str){0};

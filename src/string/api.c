@@ -2,6 +2,36 @@
 #include "module.h"
 #include "types.h"
 
+/*
+ * In order to use the posix api correctly, we need to
+ * ensure the string we're passing is null terminated
+ */
+const char* str_cstr(str str)
+{
+    if (str.null_terminated) return str.chars;
+    StrPool defaultPool = StrMem->pools[StrMem->default_pool];
+
+    ASSERT(!defaultPool.neglect_null_termination,
+           "Default pool negelcts null termination and can therefore not be "
+           "used to ensure null termination! If another pool is null "
+           "terminated, use str_cstr_opt instead");
+
+    return str_allocn(str.chars, str.len).chars;
+}
+
+const char* str_cstr_opt(StrPoolOptions opt, str str)
+{
+    if (str.null_terminated) return str.chars;
+    StrPool pool = StrMem->pools[opt.pool_idx];
+
+    ASSERT(!pool.neglect_null_termination,
+           "Pool must not neglect null termination, because we are trying to "
+           "ensure it! (Pool id was %i)",
+           opt.pool_idx);
+
+    return str_allocn_opt(opt, str.chars, str.len).chars;
+}
+
 void str_print(str string, ...)
 {
     va_list args;

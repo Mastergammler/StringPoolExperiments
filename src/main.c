@@ -350,13 +350,28 @@ void xor_tests()
     }
 }
 
-int main(int argc, char* argv[])
+void zero_values_test()
 {
-    init_program(4096);
+    str_printc("Binary zero: ( % )", fmt_n(0, pxB));
+    str_printc("Bin2: ( % )", fmt_n(0b110011001100, pxB));
+    str_printc("Bin2: ( % )", fmt_n(-5, pxB));
+    str_printc("Bin2: ( % )", fmt_n(5, pxB));
+    str_printc("Nullpointer: ( % )", fmt_p(0));
+    // str_printc("Nullpointer: ( % )", fmt_p(&normalPrint));
+    // str_printc("Nullpointer: ( % )", fmt_p(times));
+    str_printc("Nullpointer: ( % )", fmt_p(POOL(POOL_PRINT)));
+    str_printc("Nullpointer: ( % )",
+               fmt_p(str_static("Im in the string section").chars));
+    str_printc("Literally:   ( % )", fmt_p("Im in the string section"));
+    str_printc("Pointy:      ( % )", fmt_p(0xf8f8f8f8f8f8f8f8));
+    str_printc("Pointy:      ( % )", fmt_p(0x1234567890ABCDEF));
+}
 
+void num_dec_stuff_tests()
+{
     Timer timer = {};
+    StrPool* transient = &StrMem->pools[StrMem->default_pool];
 
-    StringPool* transient = &StrMem->pools[StrMem->default_pool];
     int64_t num = -1527713833408340293;
 
     // it seems cacheing only applies if i print the exact same value
@@ -428,22 +443,60 @@ int main(int argc, char* argv[])
     str_printc("| % normal | % wrapped | % w2 | % w3 | % last | % short |",
                fmt_f(normalPrint, 5), fmt_f(wraparound, 5), fmt_f(wrap2, 5),
                fmt_f(wrap3, 5), fmt_f(wraplast, 5), fmt_f(wrapShort, 5));
+}
 
-    str_printc("Binary zero: ( % )", fmt_n(0, pxB));
-    str_printc("Bin2: ( % )", fmt_n(0b110011001100, pxB));
-    str_printc("Bin2: ( % )", fmt_n(-5, pxB));
-    str_printc("Bin2: ( % )", fmt_n(5, pxB));
-    str_printc("Nullpointer: ( % )", fmt_p(0));
-    str_printc("Nullpointer: ( % )", fmt_p(&normalPrint));
-    str_printc("Nullpointer: ( % )", fmt_p(times));
-    str_printc("Nullpointer: ( % )", fmt_p(POOL(POOL_PRINT)));
-    str_printc("Nullpointer: ( % )",
-               fmt_p(str_static("Im in the string section").chars));
-    str_printc("Literally:   ( % )", fmt_p("Im in the string section"));
-    str_printc("Pointy:      ( % )", fmt_p(0xf8f8f8f8f8f8f8f8));
-    str_printc("Pointy:      ( % )", fmt_p(0x1234567890ABCDEF));
+int main(int argc, char* argv[])
+{
+    init_program(4096);
+    Timer timer = {};
+    timer_start(&timer);
 
-    debug_print_pool(*POOL(POOL_PRINT), 64);
+    int64_t num = str_parse_n(str_static("1347")).val;
+    float def = timer_elapsed_ms(&timer);
+    str_printc("%", fmt_n(num));
+
+    timer_elapsed_ms(&timer);
+    int64_t n2 = str_parse_n(str_static("   1.347xd")).val;
+    float def2 = timer_elapsed_ms(&timer);
+    str_printc("%", fmt_n(n2));
+
+    int64_t nneg = str_parse_n(str_static("-1.347")).val;
+    str_printc("%", fmt_n(nneg));
+
+    int64_t neg2 = str_parse_n(str_static(" - 1 347")).val;
+    str_printc("%", fmt_n(neg2));
+    ParseURes noneg = str_parse_u(str_static("-1337"));
+    str_printc("IgnoreNeg: % | %", fmt_b(noneg.overflow), fmt_u(noneg.val));
+
+    ParseNRes high = str_parse_n(str_static("8223372036854775807"));
+    str_printc("%", fmt_npres(high));
+
+    ParseNRes maxPos = str_parse_n(str_static("9223372036854775807"));
+    str_printc("%", fmt_npres(maxPos));
+
+    ParseNRes maxPreceeding = str_parse_n(str_static("0009223372036854775807"));
+    str_printc("%", fmt_npres(maxPreceeding));
+
+    ParseNRes min = str_parse_n(str_static("-9223372036854775808"));
+    str_printc("min %", fmt_npres(min));
+
+    ParseNRes overflow = str_parse_n(str_static("12_9223372036854775807"));
+    str_printc("overfl %", fmt_npres(overflow));
+
+    ParseNRes underflow = str_parse_n(str_static("-12_9223372036854775808"));
+    str_printc("underfl %", fmt_npres(underflow));
+
+    ParseURes max = str_parse_u(str_static("18446744073709551615"));
+    str_printc("UMax: % | %", fmt_b(max.overflow), fmt_u(max.val));
+    ParseURes over = str_parse_u(str_static("18446744073709551616"));
+    str_printc("Over: % | %", fmt_b(over.overflow), fmt_u(over.val));
+    ParseURes notneg = str_parse_u(str_static("-18446744073709551615"));
+    str_printc("NoNeg: % | %", fmt_b(notneg.overflow), fmt_u(notneg.val));
+
+    // debug_print_pool(*POOL(POOL_PRINT), 64);
+    str_printc("| % ms Program | % n1 | % n2 |",
+               fmt_f(timer_ms_since_start(&Prog.timer), 3), fmt_f(def, 6),
+               fmt_f(def2, 6));
 
     return 0;
 }

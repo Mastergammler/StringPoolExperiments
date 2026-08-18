@@ -39,6 +39,12 @@
         (FmtHeader){write_str_obj}, val                                        \
     }
 
+#define fmt_npres(val)                                                         \
+    &(NpResFormat)                                                             \
+    {                                                                          \
+        (FmtHeader){format_num_parse_res}, val                                 \
+    }
+
 #define fmt_s(val)                                                             \
     &(StrFormat)                                                               \
     {                                                                          \

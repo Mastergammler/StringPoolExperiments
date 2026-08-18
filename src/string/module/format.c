@@ -1,4 +1,5 @@
 #include "../internal.h"
+#include "../macros.h"
 
 void count_realloc(StrPoolOptions opt, str* printed, str tail)
 {
@@ -89,8 +90,11 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
         str_pool_reset(opt);
     }
 
-    // substring mode is used here, because we're actually building a single
-    // string, but using multiple print (pool_use) operations for it
+    // TODO: REFACTOR - STRING BUILDER
+    //  -> This is some version of a string builder now, so i should have
+    //     a general string builder structure here
+    //  substring mode is used here, because we're actually building a single
+    //  string, but using multiple print (pool_use) operations for it
     if (isParentFormatter) opt.substring_mode = true;
 
     char* stringStart = pool_use(opt, 0);
@@ -142,6 +146,15 @@ str format_valist(StrPoolOptions opt, str formatter, va_list args)
     va_end(args);
 
     return (str){resultStr.chars, resultStr.len, POOL_DEFAULTS(opt)};
+}
+
+str format_num_parse_res(StrPoolOptions opt, FmtHeader* header)
+{
+    NpResFormat* fmt = (NpResFormat*)header;
+
+    return str_formatc_opt(opt, "% {dirty: %, empty: %, overflow: %}",
+                           fmt_n(fmt->val.val), fmt_b(fmt->val.dirty),
+                           fmt_b(fmt->val.was_empty), fmt_b(fmt->val.overflow));
 }
 
 /*

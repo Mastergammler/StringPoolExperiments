@@ -9,7 +9,7 @@
 
 typedef struct
 {
-    uint64_t capaticy;
+    uint64_t capacity;
     uint64_t cursor;
     void* memory;
 } Arena;

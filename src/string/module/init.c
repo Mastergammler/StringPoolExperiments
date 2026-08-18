@@ -11,7 +11,7 @@ void str_pool_prepare(AllocContext ctx, StringMemory* memory, uint8_t poolCount)
     StrMem = memory;
     StrMem->pool_count = poolCount;
     StrMem->pools =
-        ctx.alloc_fn(ctx.alloc, sizeof(StringPool) * StrMem->pool_count);
+        ctx.alloc_fn(ctx.alloc, sizeof(StrPool) * StrMem->pool_count);
 
     ASSERT(StrMem->pools, "Allocation of %i pools failed!", StrMem->pool_count);
 }
@@ -38,8 +38,8 @@ void str_pool_define(uint8_t index, uint64_t size, StrPoolInitOptions opt)
         StrMem->print_pool = index;
     }
 
-    StrMem->pools[index] = (StringPool){};
-    StringPool* pool = &StrMem->pools[index];
+    StrMem->pools[index] = (StrPool){};
+    StrPool* pool = &StrMem->pools[index];
     pool->capacity = size;
     pool->pool_idx = index;
     if (opt.is_print && !opt.no_defaults)
@@ -61,7 +61,7 @@ void str_pool_finalize(AllocContext ctx)
 {
     for (int i = 0; i < StrMem->pool_count; i++)
     {
-        StringPool* pool = &StrMem->pools[i];
+        StrPool* pool = &StrMem->pools[i];
 
         // this indicated, that the pool was not initialized, that
         // str_pool_define was not called for this index

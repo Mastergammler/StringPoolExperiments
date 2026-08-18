@@ -51,6 +51,22 @@ typedef struct
 
 typedef struct
 {
+    int64_t val;
+    bool dirty;
+    bool was_empty;
+    bool overflow;
+} ParseNRes;
+
+typedef struct
+{
+    uint64_t val;
+    bool dirty;
+    bool was_empty;
+    bool overflow;
+} ParseURes;
+
+typedef struct
+{
     char* memory;
     uint64_t capacity;
     /*
@@ -64,11 +80,11 @@ typedef struct
     /* add newline at the end */
     bool add_linefeed;
 
-} StringPool;
+} StrPool;
 
 typedef struct
 {
-    StringPool* pools;
+    StrPool* pools;
     uint8_t pool_count;
 
     /*
@@ -187,6 +203,12 @@ typedef struct
     PrintMode mode;
     int places;
 } NumFormat;
+
+typedef struct
+{
+    FmtHeader header;
+    ParseNRes val;
+} NpResFormat;
 
 typedef struct
 {
