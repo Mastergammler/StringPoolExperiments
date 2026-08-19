@@ -8,6 +8,9 @@
  */
 const char* str_cstr(str str)
 {
+    ASSERT(str.chars, "String is not valid: %p :: len %i", (void*)str.chars,
+           str.len);
+
     if (str.null_terminated) return str.chars;
     StrPool defaultPool = StrMem->pools[StrMem->default_pool];
 
@@ -169,6 +172,7 @@ str str_fmt_b(bool boolean)
  * pass 0 to keep the default places
  * else we'll pad zeros
  */
+[[deprecated("use write_n instead")]]
 str str_fmt_i(int num, int places)
 {
     IntFormat fmt = {.value = num, .places = places};

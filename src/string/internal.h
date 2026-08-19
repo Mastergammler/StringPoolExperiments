@@ -82,7 +82,7 @@ extern "C"
 
     str write_int(StrPoolOptions opt, FmtHeader* header);
     str write_num(StrPoolOptions opt, FmtHeader* header);
-    str write_int_strategy(StrPoolOptions opt, FmtHeader* header);
+    str write_num_strategy(StrPoolOptions opt, FmtHeader* header);
     str write_float(StrPoolOptions opt, FmtHeader* header);
     str write_str_obj(StrPoolOptions opt, FmtHeader* header);
     str write_str(StrPoolOptions opt, FmtHeader* header);

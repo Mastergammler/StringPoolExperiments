@@ -6,13 +6,13 @@
 #define fmt_n(val, ...)                                                        \
     &(NumFormat)                                                               \
     {                                                                          \
-        (FmtHeader){write_int_strategy}, val, ##__VA_ARGS__                    \
+        (FmtHeader){write_num_strategy}, val, ##__VA_ARGS__                    \
     }
 
 #define fmt_u(val, ...)                                                        \
     &(NumFormat)                                                               \
     {                                                                          \
-        (FmtHeader){write_int_strategy}, val, pxU, ##__VA_ARGS__               \
+        (FmtHeader){write_num_strategy}, val, pxU, ##__VA_ARGS__               \
     }
 
 #define fmt_f(f, dec)                                                          \

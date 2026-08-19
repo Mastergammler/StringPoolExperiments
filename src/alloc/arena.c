@@ -12,7 +12,7 @@ void arena_init(Arena* arena, uint64_t capacity)
 void* arena_use(Arena* arena, uint64_t bytes)
 {
     uint64_t newCursor = arena->cursor + bytes;
-    JUST_ASSERT(newCursor < arena->capacity);
+    JUST_ASSERT(newCursor <= arena->capacity);
     // overflow
     JUST_ASSERT(newCursor >= arena->cursor);
 

@@ -1,7 +1,7 @@
 #include "../internal.h"
 #include "../macros.h"
 
-str write_int_strategy(StrPoolOptions opt, FmtHeader* header)
+str write_num_strategy(StrPoolOptions opt, FmtHeader* header)
 {
     NumFormat* format = (NumFormat*)header;
 
