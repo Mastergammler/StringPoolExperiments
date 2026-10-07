@@ -1,6 +1,6 @@
 #include "module.h"
 
-#include <bits/time.h>
+#include <time.h>
 
 void timer_start(Timer* timer)
 {

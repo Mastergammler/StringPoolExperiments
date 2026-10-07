@@ -5,6 +5,7 @@
 #include "string/module.h"
 #include "string/types.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 
 // TODO: create a macro, to expand array into fmt args?
@@ -136,8 +137,8 @@ NumFormat* pInMethod()
     NumFormat* fmt = fmt_n(5);
     int dumme = 123455;
     NumFormat actualObj = *fmt;
-    printf("%p %ld\n", fmt, fmt->value);
-    printf("Actual: %p %ld\n", &actualObj, actualObj.value);
+    printf("%p %" PRId64 "\n", fmt, fmt->value);
+    printf("Actual: %p %" PRId64 "\n", &actualObj, actualObj.value);
     return fmt;
 }
 
@@ -148,9 +149,10 @@ void test_compares()
 
     NumFormat* fmt = pInMethod();
     NumFormat actualOutside = *fmt;
-    printf("ActualOutside: %p %ld\n", &actualOutside, actualOutside.value);
+    printf("ActualOutside: %p %" PRId64 "\n", &actualOutside,
+           actualOutside.value);
     fmt->value = 7;
-    printf("Outside: %p %ld\n", fmt, fmt->value);
+    printf("Outside: %p %" PRId64 "\n", fmt, fmt->value);
 
     str formatted =
         str_formatc("% - % - % - % - %", fmt_f(1.005, 5), fmt_f(1.005, 4),
@@ -392,7 +394,7 @@ void num_dec_stuff_tests()
     str_printc("Num: '%'", fmt_s(numStr));
     float printOld = timer_elapsed_ms(&timer);
 
-    printf("Num: '%lu'\n", (long)num);
+    printf("Num: '%" PRIu64 "'\n", num);
     float tprintf = timer_elapsed_ms(&timer);
 
     str_printc("% - %", fmt_b(true), fmt_b(false));
@@ -492,6 +494,17 @@ int main(int argc, char* argv[])
     str_printc("Over: % | %", fmt_b(over.overflow), fmt_u(over.val));
     ParseURes notneg = str_parse_u(str_static("-18446744073709551615"));
     str_printc("NoNeg: % | %", fmt_b(notneg.overflow), fmt_u(notneg.val));
+
+    num_dec_stuff_tests();
+
+    str_printc("BINARY TEST: %", fmt_n(0b1011001, pxB));
+    str_printc("BINARY TEST: %", fmt_n(UINT32_MAX, pxB));
+    str_printc("BINARY TEST: %", fmt_n(INT64_MAX, pxB));
+
+    StrPoolOptions opt = {.pool_idx = POOL_DEFAULT};
+    NumFormat fmt = {.value = 0b1011001};
+    str printed = write_binary(opt, (FmtHeader*)&fmt);
+    str_printc("Directy: %", fmt_s(printed));
 
     // debug_print_pool(*POOL(POOL_PRINT), 64);
     str_printc("| % ms Program | % n1 | % n2 |",

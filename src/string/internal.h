@@ -2,11 +2,13 @@
 #define STRING_INTERNAL
 
 #include "../alloc/module.h"
+#include "../misc/module.h"
 #include "module.h"
 #include "types.h"
 
 #include <assert.h>
 #include <ctype.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdarg.h>
 #include <stdint.h>
@@ -55,10 +57,6 @@ extern "C"
     // => It's just the pointer there
     extern StringMemory* StrMem;
     static FmtArgBufferStore FmtArgBuffers;
-
-    int clamp(int value, int min, int max);
-    int clamp_max(int value, int ceilingEx);
-    int clamp_min(int value, int floorInc);
 
     StrSplitResult string_split_last(str src, char splitAt, StrSplitOpt opt);
 

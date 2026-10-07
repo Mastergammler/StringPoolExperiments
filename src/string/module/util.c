@@ -24,22 +24,6 @@ void release_arg_buf(int index)
     FmtArgBuffers.in_use[index] = false;
 }
 
-int clamp_min(int value, int floorInc)
-{
-    return value < floorInc ? floorInc : value;
-}
-
-int clamp_max(int value, int ceilingEx)
-{
-    return value >= ceilingEx ? ceilingEx : value;
-}
-
-int clamp(int value, int min, int max)
-{
-    int minned = clamp_min(value, min);
-    return clamp_max(minned, max);
-}
-
 uint64_t memory_size(StrPoolOptions opt, uint64_t charCount)
 {
     StrPool* pool = POOL(opt.pool_idx);
@@ -55,8 +39,8 @@ uint64_t memory_size(StrPoolOptions opt, uint64_t charCount)
 
     uint64_t memorySize = charCount + nullTermSpace + lfSpace;
     ASSERT(memorySize >= charCount,
-           "Overflow detected! Char count %ld, memory size %ld", charCount,
-           memorySize);
+           "Overflow detected! Char count %" PRIu64 ", memory size %" PRIu64,
+           charCount, memorySize);
 
     return memorySize;
 }

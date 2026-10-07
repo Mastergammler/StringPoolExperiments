@@ -68,7 +68,8 @@ void str_pool_finalize(AllocContext ctx)
         ASSERT(pool->pool_idx == i, "Pool at index %i is not initialized yet!",
                i);
         pool->memory = ctx.alloc_fn(ctx.alloc, pool->capacity);
-        ASSERT(pool->memory, "Allocation failed for pool at idx: %i, size %lu",
-               i, pool->capacity);
+        ASSERT(pool->memory,
+               "Allocation failed for pool at idx: %i, size %" PRIu64 "", i,
+               pool->capacity);
     }
 }

@@ -172,8 +172,8 @@ str str_fmt_b(bool boolean)
  * pass 0 to keep the default places
  * else we'll pad zeros
  */
-[[deprecated("use write_n instead")]]
-str str_fmt_i(int num, int places)
+__attribute__((deprecated("use write_n instead"))) str str_fmt_i(int num,
+                                                                 int places)
 {
     IntFormat fmt = {.value = num, .places = places};
     return write_int((StrPoolOptions){StrMem->default_pool}, &fmt.header);

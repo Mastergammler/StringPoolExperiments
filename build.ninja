@@ -17,8 +17,10 @@ build $outdir/string.o: cc src/string/compile.c
 build $outdir/measure.o: cc src/measure/timing.c
 build $outdir/main.o: cc src/main.c
 build $outdir/alloc.o: cc src/alloc/compile.c
+build $outdir/misc.o: cc src/misc/compile.c
 
 build $outdir/main: link $outdir/string.o $
                          $outdir/measure.o $
                          $outdir/alloc.o $
-                         $outdir/main.o
+                         $outdir/main.o $
+                         $outdir/misc.o
